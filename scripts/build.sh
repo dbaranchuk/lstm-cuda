@@ -1,5 +1,7 @@
 #! /bin/bash
 
+rm -rf build
+
 # constants
 baseDir=$(cd `dirname "$0"`;pwd)
 # functions
