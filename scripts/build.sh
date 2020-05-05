@@ -16,5 +16,5 @@ tar cf - .|(cd $baseDir/../build; tar xf -)
 cd $baseDir/../build
 nvcc *.o -o lstm
 echo "path:" $baseDir/../build/lstm
-# <learning rate> <decay rate> <blocks> <cells> <size ...>
-./lstm 0.01 0.01 10 100 10
+# <learning rate> <blocks> <cells> <size ...>
+./lstm 0.01 10 100 10

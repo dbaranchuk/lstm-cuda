@@ -31,16 +31,14 @@ int main(int argc, char *argv[]) {
 	}
 
 	int updatePoints = 10;
-	int savePoints = 10;
 	int maxEpoch = 10;
 	int trainingSize = 500;
 	int blocks = atoi(argv[2]);
 	int cells = atoi(argv[3]);
 	int sumNeurons = (blocks * cells);
-	double errorBound = 0.01;
 	double mse = 0;
 	double learningRate = atof(argv[1]);
-	long long networkStart, networkEnd, sumTime = 0, iterationStart;
+	long long networkStart, networkEnd, sumTime = 0;
 
 	const int _day = getDate()->tm_mday;
 
@@ -62,8 +60,7 @@ int main(int argc, char *argv[]) {
 
 
 	int totalIterations = 0;
-	bool converged = false;
-	for (int e = 0; (e < maxEpoch)/* && (!e || (((mse1 + mse2)/2) > errorBound))*/; e++) {
+	for (int e = 0; e < maxEpoch; e++) {
 		int c = 0, n = 0;
 		vector<double> error, output;
 
