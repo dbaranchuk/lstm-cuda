@@ -31,7 +31,7 @@ MemoryBlock::MemoryBlock(int cl, int cn) {
 	outputDataWeight = (double *)malloc(sizeof(double) * nConnections);
 
 	for (int i = 0; i < nConnections; i++) {
-		impulse[i] = (0);
+		impulse[i] = (1);
 		inputDataWeight[i] = (d(g));
 		forgetDataWeight[i] = (d(g));
 		outputDataWeight[i] = (d(g));
@@ -194,15 +194,15 @@ MemoryBlock *MemoryBlock::copyToGPU(MemoryBlock *memory) {
 	cudaMemcpy(i, memory->impulse, (sizeof(double) * memory->nConnections), cudaMemcpyHostToDevice);
 	cudaDeviceSynchronize();
 
-	//cudaMemcpy(&(memoryBlock->inputFeedbackWeight), &(ifw), (sizeof(double *)), cudaMemcpyHostToDevice);
-	//cudaMemcpy(&(memoryBlock->forgetFeedbackWeight), &(ffw), (sizeof(double *)), cudaMemcpyHostToDevice);
-	//cudaMemcpy(&(memoryBlock->outputFeedbackWeight), &(ofw), (sizeof(double *)), cudaMemcpyHostToDevice);
-	//cudaMemcpy(&(memoryBlock->bias), &(b), (sizeof(double *)), cudaMemcpyHostToDevice);
-	//cudaMemcpy(&(memoryBlock->inputDataWeight), &(idw), (sizeof(double *)), cudaMemcpyHostToDevice);
-	//cudaMemcpy(&(memoryBlock->forgetDataWeight), &(fdw), (sizeof(double *)), cudaMemcpyHostToDevice);
-	//cudaMemcpy(&(memoryBlock->outputDataWeight), &(odw), (sizeof(double *)), cudaMemcpyHostToDevice);
-	//cudaMemcpy(&(memoryBlock->impulse), &(i), (sizeof(double *)), cudaMemcpyHostToDevice);
-	//cudaDeviceSynchronize();
+	cudaMemcpy(&(memoryBlock->inputFeedbackWeight), &(ifw), (sizeof(double *)), cudaMemcpyHostToDevice);
+	cudaMemcpy(&(memoryBlock->forgetFeedbackWeight), &(ffw), (sizeof(double *)), cudaMemcpyHostToDevice);
+	cudaMemcpy(&(memoryBlock->outputFeedbackWeight), &(ofw), (sizeof(double *)), cudaMemcpyHostToDevice);
+	cudaMemcpy(&(memoryBlock->bias), &(b), (sizeof(double *)), cudaMemcpyHostToDevice);
+	cudaMemcpy(&(memoryBlock->inputDataWeight), &(idw), (sizeof(double *)), cudaMemcpyHostToDevice);
+	cudaMemcpy(&(memoryBlock->forgetDataWeight), &(fdw), (sizeof(double *)), cudaMemcpyHostToDevice);
+	cudaMemcpy(&(memoryBlock->outputDataWeight), &(odw), (sizeof(double *)), cudaMemcpyHostToDevice);
+	cudaMemcpy(&(memoryBlock->impulse), &(i), (sizeof(double *)), cudaMemcpyHostToDevice);
+	cudaDeviceSynchronize();
 
 	return memoryBlock;
 }
@@ -249,14 +249,14 @@ MemoryBlock *MemoryBlock::copyFromGPU(MemoryBlock *memory) {
 	cudaMemcpy(i, memoryBlock->impulse, (sizeof(double) * memoryBlock->nConnections), cudaMemcpyDeviceToHost);
 	cudaDeviceSynchronize();
 
-	//memcpy(&(memoryBlock->inputFeedbackWeight), &ifw, (sizeof(double *)));
-	//memcpy(&(memoryBlock->forgetFeedbackWeight), &ffw, (sizeof(double *)));
-	//memcpy(&(memoryBlock->outputFeedbackWeight), &ofw, (sizeof(double *)));
-	//memcpy(&(memoryBlock->bias), &b, (sizeof(double *)));
-	//memcpy(&(memoryBlock->inputDataWeight), &idw, (sizeof(double *)));
-	//memcpy(&(memoryBlock->forgetDataWeight), &fdw, (sizeof(double *)));
-	//memcpy(&(memoryBlock->outputDataWeight), &odw, (sizeof(double *)));
-	//memcpy(&(memoryBlock->impulse), &i, (sizeof(double *)));
+	memcpy(&(memoryBlock->inputFeedbackWeight), &ifw, (sizeof(double *)));
+	memcpy(&(memoryBlock->forgetFeedbackWeight), &ffw, (sizeof(double *)));
+	memcpy(&(memoryBlock->outputFeedbackWeight), &ofw, (sizeof(double *)));
+	memcpy(&(memoryBlock->bias), &b, (sizeof(double *)));
+	memcpy(&(memoryBlock->inputDataWeight), &idw, (sizeof(double *)));
+	memcpy(&(memoryBlock->forgetDataWeight), &fdw, (sizeof(double *)));
+	memcpy(&(memoryBlock->outputDataWeight), &odw, (sizeof(double *)));
+	memcpy(&(memoryBlock->impulse), &i, (sizeof(double *)));
 
 	return memoryBlock;
 }
