@@ -1,10 +1,3 @@
-/*
- * SawtoothNetwork.h
- *
- *  Created on: Jul 27, 2016
- *      Author: trabucco
- */
-
 #ifndef LSTMNETWORK_H_
 #define LSTMNETWORK_H_
 

@@ -6,7 +6,6 @@ __global__ void forwardPass(Neuron **neurons, double *connections, double *activ
 		int idx = (threadIdx.x + blockIdx.x * blockDim.x) + (maxId * i);
 		if (idx < size) {
 			activations[idx] = neurons[idx]->forward(connections);
-			//printf("F Neuron %d : %f\n", size, activations[idx]);
 		}
 	}
 }
@@ -17,7 +16,6 @@ __global__ void backwardPass(Neuron **neurons, double *weightedError, double *er
 		int idx = (threadIdx.x + blockIdx.x * blockDim.x) + (maxId * i);
 		if (idx < size) {
 			double *contribution = neurons[idx]->backward(weightedError[idx], learningRate);
-			//printf("B Neurons %d\n", size);
 			for (int j = 0; j < connections; j++) {
 				errorSum[j] += contribution[j];
 			}
@@ -31,7 +29,6 @@ __global__ void forwardPassLSTM(MemoryBlock **blocks, double *connections, doubl
 		int idx = (threadIdx.x + blockIdx.x * blockDim.x) + (maxId * i);
 		if (idx < size) {
 			double *blockActivation = blocks[idx]->forward(connections);
-			//printf("F Cells %d\n", blocks[idx]->nCells);
 			for (int j = 0; j < blocks[i]->nCells; j++) activations[idx * blocks[i]->nCells + j] = blockActivation[j];
 		}
 	}
@@ -42,7 +39,6 @@ __global__ void backwardPassLSTM(MemoryBlock **blocks, double **weightedError, d
 	for (int i = 0; i < (cycles); i++) {
 		int idx = (threadIdx.x + blockIdx.x * blockDim.x) + (maxId * i);
 		if (idx < size) {
-			if (idx == 0) printf("B Cells %p\n", blocks[idx]);
 			double *contribution = blocks[idx]->backward(weightedError[idx], learningRate);
 			for (int j = 0; j < connections; j++) {
 				errorSum[j] += contribution[j];

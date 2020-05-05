@@ -1,18 +1,9 @@
-/*
- * Neuron.cpp
- *
- *  Created on: Jun 22, 2016
- *      Author: trabucco
- */
-
 #include "BaseNode.cuh"
 
 BaseNode::BaseNode() {
-	// TODO Auto-generated constructor stub
 }
 
 BaseNode::~BaseNode() {
-	// TODO Auto-generated destructor stub
 }
 
 __device__ double BaseNode::sigmoid(double input) {

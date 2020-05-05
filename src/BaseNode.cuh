@@ -1,10 +1,3 @@
-/*
- * Neuron.h
- *
- *  Created on: Jun 22, 2016
- *      Author: trabucco
- */
-
 #ifndef BASENODE_H_
 #define BASENODE_H_
 

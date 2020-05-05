@@ -89,12 +89,9 @@ int main(int argc, char *argv[]) {
 			mse += error[i] * error[i];
 		mse /= error.size() * 2;
 
-		if (((e + 1) % (maxEpoch / updatePoints)) == 0) {
-			cout << "Epoch " << e << " completed in " << (networkEnd - networkStart) << "msecs" << endl;
-			cout << "Error[" << e << "] = " << mse << endl;
-			cout << "Accuracy[" << e << "] = " << (100.0 * (float)c / (float)n) << endl;
-		}
-
+		cout << "Epoch " << e << " completed in " << (networkEnd - networkStart) << "msecs" << endl;
+		cout << "Error[" << e << "] = " << mse << endl;
+		cout << "Accuracy[" << e << "] = " << (100.0 * (float)c / (float)n) << endl;}
 		dataset.reset();
 	}
 	return 0;
