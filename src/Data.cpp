@@ -2,9 +2,9 @@
 
 long long Data::n = 0;
 
-Data::Data(int emb_size, int num_classes) {
-	emb_size = emb_size;
-	num_classes = num_classes;
+Data::Data(int _emb_size, int _num_classes) {
+	emb_size = _emb_size;
+	num_classes = _num_classes;
 
 	for (int i = 0; i < num_classes; i++) {
 		vector<double> tmp;
