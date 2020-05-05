@@ -19,4 +19,4 @@ cd $baseDir/../build
 nvcc *.o -o lstm
 echo "path:" $baseDir/../build/lstm
 # <learning rate> <blocks> <cells> <size ...>
-./lstm 0.01 10 100 10
+./lstm 0.01 10 100 10 10
