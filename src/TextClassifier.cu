@@ -59,9 +59,8 @@ TextClassifier::TextClassifier(int is, int c, double lr, int num_classes) {
 	learningRate = lr;
 	block = new MemoryBlock(c, is);
 
-	layer = vector<Neuron>;
 	for (int i = 0; i < num_classes; i++)
-		layer.push_back(Neuron(c));
+        logits_layer.push_back(Neuron(c));
 }
 
 TextClassifier::~TextClassifier() {}
@@ -133,71 +132,71 @@ TextClassifier::~TextClassifier() {}
 //}
 
 double TextClassifier::train(vector<vector<double>> &inputs, vector<double> &target) {
-	if (inputs[0].size() != inputSize) {
-	    cout << "Target size mismatch" << endl;
-		return 0.0;
-	}
+    if (inputs[0].size() != inputSize) {
+        cout << "Target size mismatch" << endl;
+        return 0.0;
+    }
     // Load input data to GPU
     double **connections;
-	double *lstm_activations;
-	cudaMalloc((void **)&connections, sizeof(double *) * inputs.size());
-    cudaMalloc((void **)&lstm_activations, sizeof(double) * block.nCells);
+    double *lstm_activations;
+    cudaMalloc((void **) &connections, sizeof(double *) * inputs.size());
+    cudaMalloc((void **) &lstm_activations, sizeof(double) * block.nCells);
     for (int i = 0; i < inputs.size(); i++) {
         cudaMalloc((void **) &connections[i], sizeof(double) * inputs[0].size());
         cudaMemcpy(connections[i].data(), inputs[i].data(),
                    sizeof(double) * inputs[0].size(), cudaMemcpyHostToDevice);
     }
-	cout << inputs[0].size() << " " << block.nConnections;
-	// TODO
-	for (int i = 0; i < inputs.size(); i++) {
+    cout << inputs[0].size() << " " << block.nConnections;
+    // TODO
+    for (int i = 0; i < inputs.size(); i++) {
         cudaMemcpy(block.impulses[i].data(), connections[i].data(),
                    (sizeof(double) * block.nConnections), cudaMemcpyDeviceToHost);
     }
     MemoryBlock *device_block = MemoryBlock::copyToGPU(block);
-    forwardPassLSTM<<<maxBlocks, maxThreads>>>(device_block, connections, lstm_activations, inputs.size());
+    forwardPassLSTM << < maxBlocks, maxThreads >> > (device_block, connections, lstm_activations, inputs.size());
     cudaDeviceSynchronize();
-	cudaFree(connections);
+    cudaFree(connections);
 
     // lstm_activations become new connections for logit logits_layer
 
-	double *logits_activations;
-	cudaMalloc((void **)&logits_activations, sizeof(double) * logits_layer.size());
+    double *logits_activations;
+    cudaMalloc((void **) &logits_activations, sizeof(double) * logits_layer.size());
 
-	// Logits
+    // Logits
 
-	// Put lstm activation to impulse for backprop
+    // Put lstm activation to impulse for backprop
     Neuron **layerNeurons;
     for (int j = 0; j < logits_layer.size(); j++) {
         cudaMemcpy(logits_layer[j].impulse.data(), lstm_activations.data(),
-        		sizeof(double) * logits_layer[j].connections, cudaMemcpyDeviceToHost);
+                   sizeof(double) * logits_layer[j].connections, cudaMemcpyDeviceToHost);
     }
-	// Copy linear logits_layer to device
-    cudaMalloc((void **)&layerNeurons, sizeof(Neuron *) * logits_layer.size());
+    // Copy linear logits_layer to device
+    cudaMalloc((void **) &layerNeurons, sizeof(Neuron *) * logits_layer.size());
     for (int j = 0; j < logits_layer.size(); j++) {
         Neuron *device_neuron = Neuron::copyToGPU(&logits_layer[j]);
         cudaMemcpy(&layerNeurons[j], &device_neuron, sizeof(Neuron *), cudaMemcpyHostToDevice);
     }
-    
+
     // Logits forward
-    forwardPass<<<maxBlocks, maxThreads>>>(layerNeurons, lstm_activations, 
-    		                               logits_activations, logits_layer.size());
+    forwardPass << < maxBlocks, maxThreads >> > (layerNeurons, lstm_activations,
+            logits_activations, logits_layer.size());
     cudaDeviceSynchronize();
     cudaFree(lstm_activations);
-    
-    double *output = (double *)malloc(sizeof(double) * logits_layer.size());
-    cudaMemcpy(output.data(), logits_activations.data(), 
-    		   sizeof(double) * logits_layer.size(), cudaMemcpyDeviceToHost);
+
+    double *output = (double *) malloc(sizeof(double) * logits_layer.size());
+    cudaMemcpy(output.data(), logits_activations.data(),
+               sizeof(double) * logits_layer.size(), cudaMemcpyDeviceToHost);
 
     cudaFree(logits_activations);
 
     cout << logits_layer.size() << "\n";
-	double loss = 0.0;
+    double loss = 0.0;
     for (int i = 0; i < logits_layer.size(); i++)
         loss += output[i];
 
-    return loss
+    return loss;
     ///////////////////////////////////////////////////////////////
-
+}
     // start backward pass
 //    double *weightedError;
 //    cudaMalloc((void **)&weightedError, (sizeof(double) * logits_layer.size()));
@@ -256,4 +255,3 @@ double TextClassifier::train(vector<vector<double>> &inputs, vector<double> &tar
 //    vector<double> result(&output[0], &output[layer.size()]);
 //    free(output);
 //    return result;
-}
