@@ -10,6 +10,7 @@ using namespace std;
 
 class Data {
 private:
+	static long long n;
 	int emb_size = 64;
 	int num_classes = 10;
 	vector<vector<double> > onehot_targets;
