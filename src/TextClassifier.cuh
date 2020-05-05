@@ -27,7 +27,7 @@ public:
     TextClassifier(int is, int c, double lr, int num_classes);
 	virtual ~TextClassifier();
 //	vector<double> classify(vector<double> input);
-	double train(vector<vector<double>> input, vector<double> target);
+	double train(vector<vector<double>> &input, vector<double> &target);
 };
 
 #endif /* LSTMNETWORK_H_ */

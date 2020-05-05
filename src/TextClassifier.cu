@@ -1,7 +1,7 @@
 #include "TextClassifier.cuh"
 
 __global__ void forwardPass(Neuron **neurons, double *connections, double *activations, int size) {
-	int maxId = gridDim.x * blockDim.x;
+	//int maxId = gridDim.x * blockDim.x;
 	//int idx = (threadIdx.x + blockIdx.x * blockDim.x) + (maxId * i);
 	//if (idx < size) {
 	for (int i = 0; i < size; i++)
@@ -33,8 +33,9 @@ __global__ void forwardPass(Neuron **neurons, double *connections, double *activ
 //}
 
 __global__ void forwardPassLSTM(MemoryBlock *block, double **connections, double *activations, int cycles) {
-	for (int i = 0; i < (cycles); i++) {
-		double *local_activations = block->forward(connections[i]);
+    double *local_activations;
+    for (int i = 0; i < cycles; i++) {
+		local_activations = block->forward(connections[i]);
 	}
     for (int i = 0; i < block->nCells; i++)
         activations[i] = local_activations[i];
@@ -56,8 +57,9 @@ __global__ void forwardPassLSTM(MemoryBlock *block, double **connections, double
 TextClassifier::TextClassifier(int is, int c, double lr, int num_classes) {
 	inputSize = is;
 	learningRate = lr;
-	block = MemoryBlock(c, is);
+	block = new MemoryBlock(c, is);
 
+	layer = vector<Neuron>;
 	for (int i = 0; i < num_classes; i++)
 		layer.push_back(Neuron(c));
 }
@@ -136,13 +138,14 @@ double TextClassifier::train(vector<vector<double>> &inputs, vector<double> &tar
 		return 0.0;
 	}
     // Load input data to GPU
-    double **connections, *lstm_activations;
+    double **connections;
+	double *lstm_activations;
 	cudaMalloc((void **)&connections, sizeof(double *) * inputs.size());
     cudaMalloc((void **)&lstm_activations, sizeof(double) * block.nCells);
     for (int i = 0; i < inputs.size(); i++) {
         cudaMalloc((void **) &connections[i], sizeof(double) * inputs[0].size());
         cudaMemcpy(connections[i].data(), inputs[i].data(),
-                   (sizeof(double) * inputs[0].size()), cudaMemcpyHostToDevice);
+                   sizeof(double) * inputs[0].size(), cudaMemcpyHostToDevice);
     }
 	cout << inputs[0].size() << " " << block.nConnections;
 	// TODO
