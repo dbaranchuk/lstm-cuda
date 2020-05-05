@@ -1,6 +1,6 @@
 #include "Data.h"
 
-long long Neuron::n = 0;
+long long Data::n = 0;
 
 Data::Data(int emb_size, int num_classes) {
 	emb_size = emb_size;
