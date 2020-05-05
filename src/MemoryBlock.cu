@@ -2,8 +2,8 @@
 
 long long int MemoryBlock::n = 0;
 
-MemoryBlock::MemoryBlock(int cl, int cn) {
-	nConnections = cn;
+MemoryBlock::MemoryBlock(int cl, int hidden_size) {
+	nConnections = hidden_size;
 	nCells = cl;
 	input = 0; inputPrime = 0;
 	forget = 0; forgetPrime = 0;
@@ -19,7 +19,7 @@ MemoryBlock::MemoryBlock(int cl, int cn) {
 	outputFeedbackWeight = (double *)malloc(sizeof(double) * nCells);
 
 	for (int i = 0; i < nCells; i++) {
-		cells[i] = (new MemoryCell(nConnections));
+		cells[i] = (new MemoryCell(hidden_size));
 		inputFeedbackWeight[i] = (d(g));
 		forgetFeedbackWeight[i] = (d(g));
 		outputFeedbackWeight[i] = (d(g));
@@ -67,9 +67,9 @@ __device__ double *MemoryBlock::forward(double *input) {
 	double outputSum = bias[2];
 
 	for (int i = 0; i < nCells; i++) {
-		inputSum += (inputFeedbackWeight[i] * cells[i]->feedback);
-		forgetSum += (forgetFeedbackWeight[i] * cells[i]->feedback);
-		outputSum += (outputFeedbackWeight[i] * cells[i]->feedback);
+		inputSum += inputFeedbackWeight[i] * cells[i]->feedback;
+		forgetSum += forgetFeedbackWeight[i] * cells[i]->feedback;
+		outputSum += outputFeedbackWeight[i] * cells[i]->feedback;
 	}
 
 	// find the weighted sum of all input
