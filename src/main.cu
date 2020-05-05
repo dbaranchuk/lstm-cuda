@@ -43,11 +43,9 @@ int main(int argc, char *argv[]) {
 	int cells = atoi(argv[3]);
 	int seq_len = 20;
 
-	double mse = 0;
 	double learningRate = atof(argv[1]);
 
-	TextClassifier model = TextClassifier(emb_size, blocks, cells,
-	                                     learningRate, num_classes);
+	TextClassifier model = TextClassifier(emb_size,  cells, learningRate, num_classes);
 	Data data = Data(emb_size, num_classes);
 	networkEnd = getMSec();
 	cout << "Network initialized in " << (networkEnd - networkStart) << "msecs" << endl;
