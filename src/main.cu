@@ -50,10 +50,10 @@ int main(int argc, char *argv[]) {
 	OutputTarget target = OutputTarget(dataset.getCharSize(), dataset.getCharSize());
 	cout << "Network initialized" << endl;
 
-	for (int i = 0; i < (argc - 5); i++) {
-	    std::cout << atoi(argv[5 + i]);
-		network.addLayer(atoi(argv[5 + i]));
-		sumNeurons += atoi(argv[5 + i]);
+	for (int i = 0; i < (argc - 4); i++) {
+	    std::cout << atoi(argv[4 + i]);
+		network.addLayer(atoi(argv[4 + i]));
+		sumNeurons += atoi(argv[4 + i]);
 	} network.addLayer(dataset.getCharSize());
 
 	for (int e = 0; e < maxEpoch; e++) {
