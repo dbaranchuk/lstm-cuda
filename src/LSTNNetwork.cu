@@ -181,7 +181,8 @@ vector<double> LSTMNetwork::train(vector<double> input, vector<double> target) {
 			cudaDeviceSynchronize();
 			cudaFree(connections);
 			cudaMalloc((void **)&connections, (sizeof(double) * layers[i].size()));
-			cout << "copy activations " << cudaMemcpy(&connections[0], &activations[0], (sizeof(double) * layers[i].size()), cudaMemcpyDeviceToDevice);
+			//cout << "copy activations " <<
+			cudaMemcpy(&connections[0], &activations[0], (sizeof(double) * layers[i].size()), cudaMemcpyDeviceToDevice);
 			cudaFree(activations);
 		} cudaFree(connections);
 
@@ -202,10 +203,12 @@ vector<double> LSTMNetwork::train(vector<double> input, vector<double> target) {
 			cudaDeviceSynchronize();
 			cudaFree(weightedError);
 			cudaMalloc((void **)&weightedError, (sizeof(double) * layers[i][0].connections));
-			cout << "copy sum " << cudaMemcpy(&weightedError[0], &errorSum[0], (sizeof(double) * layers[i][0].connections), cudaMemcpyDeviceToDevice);
+			//cout << "copy sum " <<
+			cudaMemcpy(&weightedError[0], &errorSum[0], (sizeof(double) * layers[i][0].connections), cudaMemcpyDeviceToDevice);
 
 			Neuron **neuronBuffer = (Neuron **)malloc(sizeof(Neuron) * layers[i].size());
-			cout << "copy neurons " << cudaMemcpy(&neuronBuffer[0], &deviceNeurons[i][0], (sizeof(Neuron *) * layers[i].size()), cudaMemcpyDeviceToHost);
+			//cout << "copy neurons " <<
+			cudaMemcpy(&neuronBuffer[0], &deviceNeurons[i][0], (sizeof(Neuron *) * layers[i].size()), cudaMemcpyDeviceToHost);
 			for (int j = 0; j < layers[i].size(); j++) {
 				layers[i][j] = *Neuron::copyFromGPU(neuronBuffer[j]);
 			} free(neuronBuffer);
