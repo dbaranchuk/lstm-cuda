@@ -128,7 +128,6 @@ vector<double> LSTMNetwork::classify(vector<double> input) {
 }
 
 vector<double> LSTMNetwork::train(vector<double> input, vector<double> target) {
-	Neuron ***deviceNeurons = (Neuron ***)malloc(sizeof(Neuron *));
 	double *output = (double *)malloc(blocks.size() * blocks[0].nCells * sizeof(double)),
 			*connections;
 	cudaMalloc((void **)&connections, sizeof(double) * input.size());
@@ -167,7 +166,7 @@ vector<double> LSTMNetwork::train(vector<double> input, vector<double> target) {
     for (int j = 0; j < layer.size(); j++) {
         Neuron *dn = Neuron::copyToGPU(&layer[j]);
         cudaMemcpy(&layerNeurons[j], &dn, sizeof(Neuron *), cudaMemcpyHostToDevice);
-    } deviceNeurons[i] = layerNeurons;
+    }
     forwardPass<<<maxBlocks, maxThreads>>>(layerNeurons, connections, activations, layer.size(), ceil((double)layer.size() / (double)(maxBlocks * maxThreads)));
     cudaDeviceSynchronize();
     cudaFree(connections);
@@ -193,18 +192,18 @@ vector<double> LSTMNetwork::train(vector<double> input, vector<double> target) {
     cudaMemset(&errorSum[0], 0, (sizeof(double) * layer[0].connections));
 
     // compute the gradient
-    backwardPass<<<maxBlocks, maxThreads>>>(deviceNeurons[i], weightedError, errorSum, learningRate, layer[0].connections, layer.size(), ceil((double)layer.size() / (double)(maxBlocks * maxThreads)));
+    backwardPass<<<maxBlocks, maxThreads>>>(layerNeurons, weightedError, errorSum, learningRate, layer[0].connections, layer.size(), ceil((double)layer.size() / (double)(maxBlocks * maxThreads)));
     cudaDeviceSynchronize();
     cudaFree(weightedError);
     cudaMalloc((void **)&weightedError, (sizeof(double) * layer[0].connections));
     cudaMemcpy(&weightedError[0], &errorSum[0], (sizeof(double) * layer[0].connections), cudaMemcpyDeviceToDevice);
 
     Neuron **neuronBuffer = (Neuron **)malloc(sizeof(Neuron) * layer.size());
-    cudaMemcpy(&neuronBuffer[0], &deviceNeurons[i][0], (sizeof(Neuron *) * layer.size()), cudaMemcpyDeviceToHost);
+    cudaMemcpy(&neuronBuffer[0], &layerNeurons, (sizeof(Neuron *) * layer.size()), cudaMemcpyDeviceToHost);
     for (int j = 0; j < layer.size(); j++) {
         layer[j] = *Neuron::copyFromGPU(neuronBuffer[j]);
     } free(neuronBuffer);
-    cudaFree(deviceNeurons[i]);
+    cudaFree(layerNeurons);
 
 
     double **errorChunks, *errorSum;
@@ -229,7 +228,6 @@ vector<double> LSTMNetwork::train(vector<double> input, vector<double> target) {
     }
 
     cudaFree(deviceBlocks);
-    free(deviceNeurons);
     cudaFree(weightedError);
     cudaFree(errorChunks);
     cudaFree(errorSum);
