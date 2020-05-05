@@ -1,8 +1,7 @@
 #include "DatasetAdapter.h"
 
 DatasetAdapter::DatasetAdapter() {
-	// TODO Auto-generated constructor stub
-	ifstream trainingDatasetFile("penn-treebank/ptb.valid.txt");
+	ifstream trainingDatasetFile("/home/dbaranchuk/lstm-cuda/penn-treebank/ptb.valid.txt");
 	charIndex = -1;
 
 	if (trainingDatasetFile.is_open()) {
