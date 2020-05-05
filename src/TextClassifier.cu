@@ -140,17 +140,17 @@ double TextClassifier::train(vector<vector<double>> &inputs, vector<double> &tar
     double **connections;
     double *lstm_activations;
     cudaMalloc((void **) &connections, sizeof(double *) * inputs.size());
-    cudaMalloc((void **) &lstm_activations, sizeof(double) * block.nCells);
+    cudaMalloc((void **) &lstm_activations, sizeof(double) * block->nCells);
     for (int i = 0; i < inputs.size(); i++) {
         cudaMalloc((void **) &connections[i], sizeof(double) * inputs[0].size());
-        cudaMemcpy(connections[i].data(), inputs[i].data(),
+        cudaMemcpy(&connections[i][0], inputs[i].data(),
                    sizeof(double) * inputs[0].size(), cudaMemcpyHostToDevice);
     }
-    cout << inputs[0].size() << " " << block.nConnections;
+    cout << inputs[0].size() << " " << block->nConnections;
     // TODO
     for (int i = 0; i < inputs.size(); i++) {
-        cudaMemcpy(block.impulses[i].data(), connections[i].data(),
-                   (sizeof(double) * block.nConnections), cudaMemcpyDeviceToHost);
+        cudaMemcpy(block->impulses[i].data(), &connections[i][0],
+                   (sizeof(double) * block->nConnections), cudaMemcpyDeviceToHost);
     }
     MemoryBlock *device_block = MemoryBlock::copyToGPU(block);
     forwardPassLSTM << < maxBlocks, maxThreads >> > (device_block, connections, lstm_activations, inputs.size());
@@ -167,7 +167,7 @@ double TextClassifier::train(vector<vector<double>> &inputs, vector<double> &tar
     // Put lstm activation to impulse for backprop
     Neuron **layerNeurons;
     for (int j = 0; j < logits_layer.size(); j++) {
-        cudaMemcpy(logits_layer[j].impulse.data(), lstm_activations.data(),
+        cudaMemcpy(&logits_layer[j].impulse[0], &lstm_activations[0],
                    sizeof(double) * logits_layer[j].connections, cudaMemcpyDeviceToHost);
     }
     // Copy linear logits_layer to device
@@ -184,7 +184,7 @@ double TextClassifier::train(vector<vector<double>> &inputs, vector<double> &tar
     cudaFree(lstm_activations);
 
     double *output = (double *) malloc(sizeof(double) * logits_layer.size());
-    cudaMemcpy(output.data(), logits_activations.data(),
+    cudaMemcpy(&output[0], &logits_activations[0],
                sizeof(double) * logits_layer.size(), cudaMemcpyDeviceToHost);
 
     cudaFree(logits_activations);
