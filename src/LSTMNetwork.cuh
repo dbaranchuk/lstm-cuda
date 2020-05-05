@@ -26,6 +26,7 @@ private:
 public:
 	LSTMNetwork(int is, int b, int c, double l);
 	virtual ~LSTMNetwork();
+	vector<double> classify(vector<double> input);
 	vector<double> train(vector<double> input, vector<double> target);
 	void addLayer(int size);
 };

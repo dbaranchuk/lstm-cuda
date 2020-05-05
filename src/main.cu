@@ -51,7 +51,7 @@ int main(int argc, char *argv[]) {
 	cout << "Network initialized" << endl;
 
 	for (int i = 0; i < (argc - 5); i++) {
-	    cout << atoi(argv[5 + i]);
+	    std::cout << atoi(argv[5 + i]);
 		network.addLayer(atoi(argv[5 + i]));
 		sumNeurons += atoi(argv[5 + i]);
 	} network.addLayer(dataset.getCharSize());
