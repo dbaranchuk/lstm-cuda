@@ -60,8 +60,7 @@ LSTMNetwork::LSTMNetwork(int is, int b, int c, double lr, int num_classes) {
 LSTMNetwork::~LSTMNetwork() {}
 
 vector<double> LSTMNetwork::classify(vector<double> input) {
-	double *output = (double *)malloc(sizeof(double) * blocks.size() * blocks[0].nCells),
-			*connections;
+	double *connections;
 	cudaMalloc((void **)&connections, sizeof(double) * input.size());
 	cudaMemcpy(&connections[0], &input[0], (sizeof(double) * input.size()), cudaMemcpyHostToDevice);
 	if (input.size() == inputSize) {
@@ -91,8 +90,6 @@ vector<double> LSTMNetwork::classify(vector<double> input) {
 		cudaMalloc((void **)&connections, (sizeof(double) * blocks.size() * blocks[0].nCells));
 		cudaMemcpy(&connections[0], &activations[0], (sizeof(double) * blocks.size() * blocks[0].nCells), cudaMemcpyDeviceToDevice);
 		cudaFree(activations);
-		free(output);
-		output = (double *)malloc(sizeof(double) * layer.size());
 
         // Layer
 		cudaMalloc((void **)&activations, (sizeof(double) * layer.size()));
@@ -114,7 +111,8 @@ vector<double> LSTMNetwork::classify(vector<double> input) {
 		cudaMemcpy(&neuronBuffer[0], &deviceNeurons[0], (sizeof(Neuron *) * layer.size()), cudaMemcpyDeviceToHost);
 		for (int j = 0; j < layer.size(); j++) {
 			layer[j] = *Neuron::copyFromGPU(neuronBuffer[j]);
-		} 
+		}
+		double *output = (double *)malloc(sizeof(double) * layer.size());
 		cudaMemcpy(&output[0], &activations[0], (sizeof(double) * layer.size()), cudaMemcpyDeviceToHost);
 		cudaFree(activations);
 		cudaFree(deviceNeurons);
@@ -128,8 +126,7 @@ vector<double> LSTMNetwork::classify(vector<double> input) {
 }
 
 vector<double> LSTMNetwork::train(vector<double> input, vector<double> target) {
-	double *output = (double *)malloc(blocks.size() * blocks[0].nCells * sizeof(double)),
-			*connections;
+	double *connections;
 	cudaMalloc((void **)&connections, sizeof(double) * input.size());
 	cudaMemcpy(&connections[0], &input[0], (sizeof(double) * input.size()), cudaMemcpyHostToDevice);
 	if (input.size() != inputSize) {
@@ -151,12 +148,7 @@ vector<double> LSTMNetwork::train(vector<double> input, vector<double> target) {
     cudaFree(connections);
     cudaMalloc((void **)&connections, (sizeof(double) * blocks.size() * blocks[0].nCells));
     cudaMemcpy(&connections[0], &activations[0], (sizeof(double) * blocks.size() * blocks[0].nCells), cudaMemcpyDeviceToDevice);
-    for (int i = 0; i < blocks.size(); i++)
-        cout << connections[i] << " ";
     cudaFree(activations);
-    free(output);
-
-    output = (double *)malloc(sizeof(double) * layer.size());
 
     cudaMalloc((void **)&activations, (sizeof(double) * layer.size()));
 
@@ -175,10 +167,16 @@ vector<double> LSTMNetwork::train(vector<double> input, vector<double> target) {
     cudaMalloc((void **)&connections, (sizeof(double) * layer.size()));
 
     cudaMemcpy(&connections[0], &activations[0], (sizeof(double) * layer.size()), cudaMemcpyDeviceToDevice);
+
+    double *output = (double *)malloc(sizeof(double) * layer.size());
+    cudaMemcpy(&output[0], &activations[0], (sizeof(double) * layer.size()), cudaMemcpyDeviceToHost);
+
     cudaFree(activations);
     cudaFree(connections);
 
-
+    cout << layer.size();
+    for (int i = 0; i < layer.size(); i++)
+        cout << output[i] << " ";
 
     // start backward pass
     double *weightedError;
