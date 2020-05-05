@@ -13,10 +13,10 @@ MemoryCell::MemoryCell(int c) {
 	default_random_engine g(time(0) + (n++));
 	normal_distribution<double> d(0, 1);
 
-	cellFeedbackWeight = d(g);
-	cellFeedbackPartial = 0;
-	inputFeedbackPartial = 0;
-	forgetFeedbackPartial = 0;
+	cell_hidden_weight = d(g);
+	cell_hidden_partial = 0;
+	input_hidden_partial = 0;
+	forget_hidden_partial = 0;
 
 	cell_data_weight = (double *)malloc(sizeof(double) * c);
 	cell_data_partial = (double *)malloc(sizeof(double) * c);
