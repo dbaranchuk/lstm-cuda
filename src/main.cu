@@ -31,7 +31,7 @@ int main(int argc, char *argv[]) {
 	}
 
 	int maxEpoch = 10;
-	int trainingSize = 500;
+	int trainingSize = 256;
 	int blocks = atoi(argv[2]);
 	int cells = atoi(argv[3]);
 	int sumNeurons = (blocks * cells);
@@ -46,19 +46,16 @@ int main(int argc, char *argv[]) {
 	networkEnd = getMSec();
 	cout << "Language Dataset loaded in " << (networkEnd - networkStart) << "msecs" << endl;
 
-
 	LSTMNetwork network = LSTMNetwork(dataset.getCharSize(), blocks, cells, learningRate);
 	OutputTarget target = OutputTarget(dataset.getCharSize(), dataset.getCharSize());
 	cout << "Network initialized" << endl;
 
-
 	for (int i = 0; i < (argc - 5); i++) {
+	    cout << atoi(argv[5 + i]);
 		network.addLayer(atoi(argv[5 + i]));
 		sumNeurons += atoi(argv[5 + i]);
 	} network.addLayer(dataset.getCharSize());
 
-
-	int totalIterations = 0;
 	for (int e = 0; e < maxEpoch; e++) {
 		int c = 0, n = 0;
 		vector<double> error, output;
@@ -81,7 +78,6 @@ int main(int argc, char *argv[]) {
 		} networkEnd = getMSec();
 
 		sumTime += (networkEnd - networkStart);
-		totalIterations += 1;
 
 		mse = 0;
 		for (int i = 0; i < error.size(); i++)

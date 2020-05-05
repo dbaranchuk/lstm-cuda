@@ -140,108 +140,110 @@ vector<double> LSTMNetwork::train(vector<double> input, vector<double> target) {
 			*connections;
 	cudaMalloc((void **)&connections, sizeof(double) * input.size());
 	cudaMemcpy(&connections[0], &input[0], (sizeof(double) * input.size()), cudaMemcpyHostToDevice);
-	if (input.size() == inputSize) {
-		// start forward pass
-		// calculate activations from bottom up
-		double *activations;
-		cudaMalloc((void **)&activations, (sizeof(double) * blocks.size() * blocks[0].nCells));
-		MemoryBlock **deviceBlocks;
-		for (int i = 0; i < blocks.size(); i++) {
-			cudaMemcpy(&(blocks[i].impulse[0]), &connections[0], (sizeof(double) * blocks[i].nConnections), cudaMemcpyDeviceToHost);
-		} cudaMalloc((void **)&deviceBlocks, sizeof(MemoryBlock *) * blocks.size());
-		for (int i = 0; i < blocks.size(); i++) {
-			MemoryBlock *db = MemoryBlock::copyToGPU(&blocks[i]);
-			cudaMemcpy(&deviceBlocks[i], &db, sizeof(MemoryBlock *), cudaMemcpyHostToDevice);
-		} forwardPassLSTM<<<maxBlocks, maxThreads>>>(deviceBlocks, connections, activations, blocks.size(), ceil((double)blocks.size() / (double)(maxBlocks * maxThreads)));
-		cudaDeviceSynchronize();
-		cudaFree(connections);
-		cudaMalloc((void **)&connections, (sizeof(double) * blocks.size() * blocks[0].nCells));
-		cudaMemcpy(&connections[0], &activations[0], (sizeof(double) * blocks.size() * blocks[0].nCells), cudaMemcpyDeviceToDevice);
-		cudaFree(activations);
-		free(output);
-		output = (double *)malloc(sizeof(double) * layers[layers.size() - 1].size());
-
-		for (int i = 0; i < layers.size(); i++) {
-			cudaMalloc((void **)&activations, (sizeof(double) * layers[i].size()));
-
-			Neuron **layerNeurons;
-			for (int j = 0; j < layers[i].size(); j++) {
-				cudaMemcpy(&(layers[i][j].impulse[0]), &connections[0], (sizeof(double) * layers[i][j].connections), cudaMemcpyDeviceToHost);
-			}
-			cudaMalloc((void **)&layerNeurons, sizeof(Neuron *) * layers[i].size());
-			for (int j = 0; j < layers[i].size(); j++) {
-				Neuron *dn = Neuron::copyToGPU(&layers[i][j]);
-				cudaMemcpy(&layerNeurons[j], &dn, sizeof(Neuron *), cudaMemcpyHostToDevice);
-			} deviceNeurons[i] = layerNeurons;
-			forwardPass<<<maxBlocks, maxThreads>>>(layerNeurons, connections, activations, layers[i].size(), ceil((double)layers[i].size() / (double)(maxBlocks * maxThreads)));
-			cudaDeviceSynchronize();
-			cudaFree(connections);
-			cudaMalloc((void **)&connections, (sizeof(double) * layers[i].size()));
-			//cout << "copy activations " <<
-			cudaMemcpy(&connections[0], &activations[0], (sizeof(double) * layers[i].size()), cudaMemcpyDeviceToDevice);
-			cudaFree(activations);
-		} cudaFree(connections);
-
-		// start backward pass
-		double *weightedError;
-		cudaMalloc((void **)&weightedError, (sizeof(double) * layers[layers.size() - 1].size()));
-		for (int i = 0; i < layers[layers.size() - 1].size(); i++) {
-			double error = (output[i] - target[i]);
-			output[i] = error;
-			cudaMemcpy(&weightedError[i], &error, sizeof(double), cudaMemcpyHostToDevice);
-		} for (int i = (layers.size() - 1); i >= 0; i--) {
-			double *errorSum;
-			cudaMalloc((void **)&errorSum, (sizeof(double) * layers[i][0].connections));
-			cudaMemset(&errorSum[0], 0, (sizeof(double) * layers[i][0].connections));
-
-			// compute the gradient
-			backwardPass<<<maxBlocks, maxThreads>>>(deviceNeurons[i], weightedError, errorSum, learningRate, layers[i][0].connections, layers[i].size(), ceil((double)layers[i].size() / (double)(maxBlocks * maxThreads)));
-			cudaDeviceSynchronize();
-			cudaFree(weightedError);
-			cudaMalloc((void **)&weightedError, (sizeof(double) * layers[i][0].connections));
-			//cout << "copy sum " <<
-			cudaMemcpy(&weightedError[0], &errorSum[0], (sizeof(double) * layers[i][0].connections), cudaMemcpyDeviceToDevice);
-
-			Neuron **neuronBuffer = (Neuron **)malloc(sizeof(Neuron) * layers[i].size());
-			//cout << "copy neurons " <<
-			cudaMemcpy(&neuronBuffer[0], &deviceNeurons[i][0], (sizeof(Neuron *) * layers[i].size()), cudaMemcpyDeviceToHost);
-			for (int j = 0; j < layers[i].size(); j++) {
-				layers[i][j] = *Neuron::copyFromGPU(neuronBuffer[j]);
-			} free(neuronBuffer);
-			cudaFree(deviceNeurons[i]);
-		}
-		double **errorChunks, *errorSum;
-		cudaMalloc((void **)&errorChunks, (sizeof(double *) * blocks.size()));
-		cudaMalloc((void **)&errorSum, (sizeof(double) * blocks[0].nConnections));
-		cudaMemset(&errorSum[0], 0.0, (sizeof(double) * blocks[0].nConnections));
-		for (int i = 0; i < (blocks.size()); i++) {
-			double *chunk;
-			cudaMalloc((void **)&chunk, (sizeof(double) * blocks[i].nCells));
-			cudaMemcpy(&chunk[0], &weightedError[(i * blocks[i].nCells)], (sizeof(double) * blocks[i].nCells), cudaMemcpyDeviceToDevice);
-			cudaMemcpy(&errorChunks[i], &chunk, (sizeof(double *)), cudaMemcpyHostToDevice);
-		} backwardPassLSTM<<<maxBlocks, maxThreads>>>(deviceBlocks, errorChunks, errorSum, learningRate, blocks[0].nConnections, blocks.size(), ceil((double)blocks.size() / (double)(maxBlocks * maxThreads)));
-		cudaDeviceSynchronize();
-
-		MemoryBlock **blockBuffer = (MemoryBlock **)malloc(sizeof(MemoryBlock *) * blocks.size());
-		//cout << blocks.size() << " copy blocks " <<
-		cudaMemcpy(blockBuffer, deviceBlocks, (sizeof(MemoryBlock *) * blocks.size()), cudaMemcpyDeviceToHost);
-
-		for (int i = 0; i < blocks.size(); i++) {
-			MemoryBlock temp = *MemoryBlock::copyFromGPU(blockBuffer[i]);
-			blocks[i] = temp;
-		}
-
-		cudaFree(deviceBlocks);
-		free(deviceNeurons);
-		cudaFree(weightedError);
-		cudaFree(errorChunks);
-		cudaFree(errorSum);
-
-		vector<double> result(&output[0], &output[layers[layers.size() - 1].size()]);
-		free(output);
-		return result;
-	} else {
-		cout << "Target size mismatch" << endl;
+	if (input.size() != inputSize) {
+	    cout << "Target size mismatch" << endl;
 		return vector<double>();
 	}
+    // start forward pass
+    // calculate activations from bottom up
+    double *activations;
+    cudaMalloc((void **)&activations, (sizeof(double) * blocks.size() * blocks[0].nCells));
+    MemoryBlock **deviceBlocks;
+    for (int i = 0; i < blocks.size(); i++) {
+        cudaMemcpy(&(blocks[i].impulse[0]), &connections[0], (sizeof(double) * blocks[i].nConnections), cudaMemcpyDeviceToHost);
+    } cudaMalloc((void **)&deviceBlocks, sizeof(MemoryBlock *) * blocks.size());
+    for (int i = 0; i < blocks.size(); i++) {
+        MemoryBlock *db = MemoryBlock::copyToGPU(&blocks[i]);
+        cudaMemcpy(&deviceBlocks[i], &db, sizeof(MemoryBlock *), cudaMemcpyHostToDevice);
+    } forwardPassLSTM<<<maxBlocks, maxThreads>>>(deviceBlocks, connections, activations, blocks.size(), ceil((double)blocks.size() / (double)(maxBlocks * maxThreads)));
+    cudaDeviceSynchronize();
+    cudaFree(connections);
+    cudaMalloc((void **)&connections, (sizeof(double) * blocks.size() * blocks[0].nCells));
+    cudaMemcpy(&connections[0], &activations[0], (sizeof(double) * blocks.size() * blocks[0].nCells), cudaMemcpyDeviceToDevice);
+    cudaFree(activations);
+    free(output);
+
+    output = (double *)malloc(sizeof(double) * layers[layers.size() - 1].size());
+
+    for (int i = 0; i < layers.size(); i++) {
+        cudaMalloc((void **)&activations, (sizeof(double) * layers[i].size()));
+
+        Neuron **layerNeurons;
+        for (int j = 0; j < layers[i].size(); j++) {
+            cudaMemcpy(&(layers[i][j].impulse[0]), &connections[0], (sizeof(double) * layers[i][j].connections), cudaMemcpyDeviceToHost);
+        }
+        cudaMalloc((void **)&layerNeurons, sizeof(Neuron *) * layers[i].size());
+        for (int j = 0; j < layers[i].size(); j++) {
+            Neuron *dn = Neuron::copyToGPU(&layers[i][j]);
+            cudaMemcpy(&layerNeurons[j], &dn, sizeof(Neuron *), cudaMemcpyHostToDevice);
+        } deviceNeurons[i] = layerNeurons;
+        forwardPass<<<maxBlocks, maxThreads>>>(layerNeurons, connections, activations, layers[i].size(), ceil((double)layers[i].size() / (double)(maxBlocks * maxThreads)));
+        cudaDeviceSynchronize();
+        cudaFree(connections);
+        cudaMalloc((void **)&connections, (sizeof(double) * layers[i].size()));
+        //cout << "copy activations " <<
+        cudaMemcpy(&connections[0], &activations[0], (sizeof(double) * layers[i].size()), cudaMemcpyDeviceToDevice);
+        cudaFree(activations);
+    } cudaFree(connections);
+
+
+
+    // start backward pass
+    double *weightedError;
+    cudaMalloc((void **)&weightedError, (sizeof(double) * layers[layers.size() - 1].size()));
+    for (int i = 0; i < layers[layers.size() - 1].size(); i++) {
+        double error = (output[i] - target[i]);
+        output[i] = error;
+        cudaMemcpy(&weightedError[i], &error, sizeof(double), cudaMemcpyHostToDevice);
+    } for (int i = (layers.size() - 1); i >= 0; i--) {
+        double *errorSum;
+        cudaMalloc((void **)&errorSum, (sizeof(double) * layers[i][0].connections));
+        cudaMemset(&errorSum[0], 0, (sizeof(double) * layers[i][0].connections));
+
+        // compute the gradient
+        backwardPass<<<maxBlocks, maxThreads>>>(deviceNeurons[i], weightedError, errorSum, learningRate, layers[i][0].connections, layers[i].size(), ceil((double)layers[i].size() / (double)(maxBlocks * maxThreads)));
+        cudaDeviceSynchronize();
+        cudaFree(weightedError);
+        cudaMalloc((void **)&weightedError, (sizeof(double) * layers[i][0].connections));
+        //cout << "copy sum " <<
+        cudaMemcpy(&weightedError[0], &errorSum[0], (sizeof(double) * layers[i][0].connections), cudaMemcpyDeviceToDevice);
+
+        Neuron **neuronBuffer = (Neuron **)malloc(sizeof(Neuron) * layers[i].size());
+        //cout << "copy neurons " <<
+        cudaMemcpy(&neuronBuffer[0], &deviceNeurons[i][0], (sizeof(Neuron *) * layers[i].size()), cudaMemcpyDeviceToHost);
+        for (int j = 0; j < layers[i].size(); j++) {
+            layers[i][j] = *Neuron::copyFromGPU(neuronBuffer[j]);
+        } free(neuronBuffer);
+        cudaFree(deviceNeurons[i]);
+    }
+    double **errorChunks, *errorSum;
+    cudaMalloc((void **)&errorChunks, (sizeof(double *) * blocks.size()));
+    cudaMalloc((void **)&errorSum, (sizeof(double) * blocks[0].nConnections));
+    cudaMemset(&errorSum[0], 0.0, (sizeof(double) * blocks[0].nConnections));
+    for (int i = 0; i < (blocks.size()); i++) {
+        double *chunk;
+        cudaMalloc((void **)&chunk, (sizeof(double) * blocks[i].nCells));
+        cudaMemcpy(&chunk[0], &weightedError[(i * blocks[i].nCells)], (sizeof(double) * blocks[i].nCells), cudaMemcpyDeviceToDevice);
+        cudaMemcpy(&errorChunks[i], &chunk, (sizeof(double *)), cudaMemcpyHostToDevice);
+    } backwardPassLSTM<<<maxBlocks, maxThreads>>>(deviceBlocks, errorChunks, errorSum, learningRate, blocks[0].nConnections, blocks.size(), ceil((double)blocks.size() / (double)(maxBlocks * maxThreads)));
+    cudaDeviceSynchronize();
+
+    MemoryBlock **blockBuffer = (MemoryBlock **)malloc(sizeof(MemoryBlock *) * blocks.size());
+    //cout << blocks.size() << " copy blocks " <<
+    cudaMemcpy(blockBuffer, deviceBlocks, (sizeof(MemoryBlock *) * blocks.size()), cudaMemcpyDeviceToHost);
+
+    for (int i = 0; i < blocks.size(); i++) {
+        MemoryBlock temp = *MemoryBlock::copyFromGPU(blockBuffer[i]);
+        blocks[i] = temp;
+    }
+
+    cudaFree(deviceBlocks);
+    free(deviceNeurons);
+    cudaFree(weightedError);
+    cudaFree(errorChunks);
+    cudaFree(errorSum);
+
+    vector<double> result(&output[0], &output[layers[layers.size() - 1].size()]);
+    free(output);
+    return result;
 }
