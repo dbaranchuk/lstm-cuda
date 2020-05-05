@@ -26,12 +26,12 @@ public:
 	int nConnections;
 	int nCells;
 	MemoryCell **cells;
-	double *inputDataWeight,
-		*forgetDataWeight, *outputDataWeight,
+	double *input_data_weight,
+		*forget_data_weight, *output_data_weight,
 		*bias, *impulse,
-		*inputFeedbackWeight,
-		*forgetFeedbackWeight,
-		*outputFeedbackWeight;
+		*input_hidden_weight,
+		*forget_hidden_weight,
+		*output_hidden_weight;
 	double input, inputPrime,
 		forget, forgetPrime,
 		output, outputPrime;
@@ -41,7 +41,7 @@ public:
 	MemoryBlock(int cl, int cn);
 	virtual ~MemoryBlock();
 	__device__ double *forward(double *input);
-	__device__ double *backward(double *errorPrime, double learningRate);
+//	__device__ double *backward(double *errorPrime, double learningRate);
 	static MemoryBlock *copyToGPU(MemoryBlock *memory);
 	static MemoryBlock *copyFromGPU(MemoryBlock *memory);
 };

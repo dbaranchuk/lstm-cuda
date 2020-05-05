@@ -18,16 +18,16 @@ MemoryCell::MemoryCell(int c) {
 	inputFeedbackPartial = 0;
 	forgetFeedbackPartial = 0;
 
-	cellDataWeight = (double *)malloc(sizeof(double) * c);
-	cellDataPartial = (double *)malloc(sizeof(double) * c);
-	forgetDataPartial = (double *)malloc(sizeof(double) * c);
-	inputDataPartial = (double *)malloc(sizeof(double) * c);
+	cell_data_weight = (double *)malloc(sizeof(double) * c);
+	cell_data_partial = (double *)malloc(sizeof(double) * c);
+	forget_data_partial = (double *)malloc(sizeof(double) * c);
+	input_data_partial = (double *)malloc(sizeof(double) * c);
 
 	for (int i = 0; i < c; i++) {
-		cellDataWeight[i] = (d(g));
-		cellDataPartial[i] = (0);
-		forgetDataPartial[i] = (0);
-		inputDataPartial[i] = (0);
+		cell_data_weight[i] = (d(g));
+		cell_data_partial[i] = (0);
+		forget_data_partial[i] = (0);
+		input_data_partial[i] = (0);
 	}
 }
 
@@ -59,16 +59,16 @@ MemoryCell *MemoryCell::copyToGPU(MemoryCell *memory) {
 	cudaMalloc((void **)&cdp, (sizeof(double) * memory->nConnections));
 	cudaDeviceSynchronize();
 
-	cudaMemcpy(cdw, memory->cellDataWeight, (sizeof(double) * memory->nConnections), cudaMemcpyHostToDevice);
-	cudaMemcpy(idp, memory->inputDataPartial, (sizeof(double) * memory->nConnections), cudaMemcpyHostToDevice);
-	cudaMemcpy(fdp, memory->forgetDataPartial, (sizeof(double) * memory->nConnections), cudaMemcpyHostToDevice);
-	cudaMemcpy(cdp, memory->cellDataPartial, (sizeof(double) * memory->nConnections), cudaMemcpyHostToDevice);
+	cudaMemcpy(cdw, memory->cell_data_weight, (sizeof(double) * memory->nConnections), cudaMemcpyHostToDevice);
+	cudaMemcpy(idp, memory->input_data_partial, (sizeof(double) * memory->nConnections), cudaMemcpyHostToDevice);
+	cudaMemcpy(fdp, memory->forget_data_partial, (sizeof(double) * memory->nConnections), cudaMemcpyHostToDevice);
+	cudaMemcpy(cdp, memory->cell_data_partial, (sizeof(double) * memory->nConnections), cudaMemcpyHostToDevice);
 	cudaDeviceSynchronize();
 
-	cudaMemcpy(&(memoryCell->cellDataWeight), &cdw, sizeof(double *), cudaMemcpyHostToDevice);
-	cudaMemcpy(&(memoryCell->inputDataPartial), &idp, sizeof(double *), cudaMemcpyHostToDevice);
-	cudaMemcpy(&(memoryCell->forgetDataPartial), &fdp, sizeof(double *), cudaMemcpyHostToDevice);
-	cudaMemcpy(&(memoryCell->cellDataPartial), &cdp, sizeof(double *), cudaMemcpyHostToDevice);
+	cudaMemcpy(&(memoryCell->cell_data_weight), &cdw, sizeof(double *), cudaMemcpyHostToDevice);
+	cudaMemcpy(&(memoryCell->input_data_partial), &idp, sizeof(double *), cudaMemcpyHostToDevice);
+	cudaMemcpy(&(memoryCell->forget_data_partial), &fdp, sizeof(double *), cudaMemcpyHostToDevice);
+	cudaMemcpy(&(memoryCell->cell_data_partial), &cdp, sizeof(double *), cudaMemcpyHostToDevice);
 	cudaDeviceSynchronize();
 
 	return memoryCell;
@@ -88,16 +88,16 @@ MemoryCell *MemoryCell::copyFromGPU(MemoryCell *memory) {
 	fdp = (double *)malloc(sizeof(double) * memoryCell->nConnections);
 	cdp = (double *)malloc(sizeof(double) * memoryCell->nConnections);
 
-	cudaMemcpy(cdw, memoryCell->cellDataWeight, (sizeof(double) * memoryCell->nConnections), cudaMemcpyDeviceToHost);
-	cudaMemcpy(idp, memoryCell->inputDataPartial, (sizeof(double) * memoryCell->nConnections), cudaMemcpyDeviceToHost);
-	cudaMemcpy(fdp, memoryCell->forgetDataPartial, (sizeof(double) * memoryCell->nConnections), cudaMemcpyDeviceToHost);
-	cudaMemcpy(cdp, memoryCell->cellDataPartial, (sizeof(double) * memoryCell->nConnections), cudaMemcpyDeviceToHost);
+	cudaMemcpy(cdw, memoryCell->cell_data_weight, (sizeof(double) * memoryCell->nConnections), cudaMemcpyDeviceToHost);
+	cudaMemcpy(idp, memoryCell->input_data_partial, (sizeof(double) * memoryCell->nConnections), cudaMemcpyDeviceToHost);
+	cudaMemcpy(fdp, memoryCell->forget_data_partial, (sizeof(double) * memoryCell->nConnections), cudaMemcpyDeviceToHost);
+	cudaMemcpy(cdp, memoryCell->cell_data_partial, (sizeof(double) * memoryCell->nConnections), cudaMemcpyDeviceToHost);
 	cudaDeviceSynchronize();
 
-	memcpy(&(memoryCell->cellDataWeight), &cdw, (sizeof(double *)));
-	memcpy(&(memoryCell->inputDataPartial), &idp, (sizeof(double *)));
-	memcpy(&(memoryCell->forgetDataPartial), &fdp, (sizeof(double *)));
-	memcpy(&(memoryCell->cellDataPartial), &cdp, (sizeof(double *)));
+	memcpy(&(memoryCell->cell_data_weight), &cdw, (sizeof(double *)));
+	memcpy(&(memoryCell->input_data_partial), &idp, (sizeof(double *)));
+	memcpy(&(memoryCell->forget_data_partial), &fdp, (sizeof(double *)));
+	memcpy(&(memoryCell->cell_data_partial), &cdp, (sizeof(double *)));
 
 	return memoryCell;
 }

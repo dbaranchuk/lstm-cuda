@@ -9,15 +9,15 @@
 
 long long Neuron::n = 0;
 
-Neuron::Neuron(int nConnections) {
+Neuron::Neuron(int size) {
 	activation = 0; activationPrime = 0;
-	connections = nConnections;
+	connections = size;
 	default_random_engine g(time(0) + (n++));
 	normal_distribution<double> d(0, 1);
-	weightedError = (double *)malloc(sizeof(double) * nConnections);
-	weight = (double *)malloc(sizeof(double) * nConnections);
-	impulse = (double *)calloc(nConnections, sizeof(double));
-	for (int i = 0; i < connections; i++) {
+	weightedError = (double *)malloc(sizeof(double) * size);
+	weight = (double *)malloc(sizeof(double) * size);
+	impulse = (double *)calloc(size, sizeof(double));
+	for (int i = 0; i < size; i++) {
 		weight[i] = (d(g));
 	}
 }
@@ -45,9 +45,7 @@ __device__ double Neuron::forward(double *input) {
 	// find the weighted sum of all input
 	for (int i = 0; i < connections; i++) {
 		sum += input[i] * weight[i];
-		//sum += input[i];
-		//sum += weight[i];
-	}// cout << " sum : " << sum << " weights : " << weight.size() << endl;
+	}
 	activation = activate(sum);
 	activationPrime = activatePrime(sum);
 	return activation;

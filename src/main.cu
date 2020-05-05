@@ -1,6 +1,5 @@
-#include "LSTMNetwork.cuh"
-#include "DatasetAdapter.h"
-#include "OutputTarget.h"
+#include "TextClassifier.cuh"
+#include "Data.h"
 #include <vector>
 #include <iostream>
 #include <sstream>
@@ -9,6 +8,8 @@
 #include <sys/time.h>
 #include <stdlib.h>
 #include <math.h>
+#include <ctime>
+
 using namespace std;
 
 long long getMSec() {
@@ -29,64 +30,43 @@ int main(int argc, char *argv[]) {
 		cout << argv[0] << " <learning rate> <blocks> <cells>" << endl;
 		return -1;
 	}
+	std::srand(unsigned(std::time(0)));
 
-    long long networkStart, networkEnd, sumTime = 0;
+    long long networkStart, networkEnd;
     networkStart = getMSec();
-    DatasetAdapter dataset = DatasetAdapter();
+    DatasetAdapter dataset = Dataset();
     networkEnd = getMSec();
     cout << "Language Dataset loaded in " << (networkEnd - networkStart) << "msecs" << endl;
 
-	int maxEpoch = 10;
-	int trainingSize = 256;
-	int emb_size = 64;
-	int num_classes = dataset.getCharSize();
+	int num_epochs = 10;
+	int num_batches = 256;
+	int emb_size = 128;
+	int num_classes = 10;
 	int blocks = atoi(argv[2]);
 	int cells = atoi(argv[3]);
-	int seq_len = 10;
+	int seq_len = 20;
 
 	double mse = 0;
 	double learningRate = atof(argv[1]);
 
-	LSTMNetwork network = LSTMNetwork(emb_size, blocks, cells,
-	                                  learningRate, num_classes);
-	OutputTarget target = OutputTarget(emb_size, num_classes);
+	TextClassifier model = TextClassifier(emb_size, blocks, cells,
+	                                     learningRate, num_classes);
+	Data data = Data(emb_size, num_classes);
 	cout << "Network initialized" << endl;
 
-	for (int e = 0; e < maxEpoch; e++) {
-		//int c = 0, n = 0;
-		vector<double> error, output;
-
+	for (int e = 0; e < num_epochs; e++) {
 		networkStart = getMSec();
-		for (int i = 0; i < trainingSize && dataset.nextChar(); i++) {
-			DatasetExample data = dataset.getChar();
-			vector<vector<double>> inputs;
-            vector<vector<double>> targets;
-			for (int j=0; j < seq_len; j++) {
-                inputs.push_back(target.getOutputFromTarget(data.current));
-                targets.push_back(target.getOutputFromTarget(data.next));
-            }
-            error = network.train(inputs, targets);
+		double loss = 0.0;
+		for (int i = 0; i < num_batches; i++) {
+			vector<double> onehot_target = get_onehot_target(std::rand() % num_classes);
+			vector<vector<double>> embs = get_emb_sequence(seq_len);
+            loss += model.train(embs, onehot_target);
 		}
-
-		dataset.reset();
-
-		//for (int i = 0; i < trainingSize && dataset.nextChar(); i++) {
-		//	DatasetExample data = dataset.getChar();
-		//	output = network.classify(target.getOutputFromTarget(data.current));
-
-		//	n++;
-		//	if (target.getTargetFromOutput(output) == (int)data.next) c++;
-		//}
+		loss /= num_batches;
 		networkEnd = getMSec();
-		sumTime += (networkEnd - networkStart);
-
-		mse = 0;
-		for (int i = 0; i < error.size(); i++)
-			mse += error[i] * error[i];
-		mse /= error.size() * 2;
 
 		cout << "Epoch " << e << " completed in " << (networkEnd - networkStart) << "msecs" << endl;
-		cout << "Error[" << e << "] = " << mse << endl;
+		cout << "Loss[" << e << "] = " << loss << endl;
 		//cout << "Accuracy[" << e << "] = " << (100.0 * (float)c / (float)n) << endl;
 		dataset.reset();
 	}

@@ -17,16 +17,16 @@ private:
 	static long long n;
 public:
 	int nConnections;
-	double *cellDataWeight, *cellDataPartial,
-		*inputDataPartial, *forgetDataPartial;
-	double cellFeedbackWeight, bias;
+	double *cell_data_weight, *cell_data_partial,
+		*input_data_partial, *forget_data_partial;
+	double cell_hidden_weight, bias;
 	double activationIn, activationInPrime,
 		activationOut, activationOutPrime,
 		state, previousState,
 		feedback, previousFeedback,
-		cellFeedbackPartial;
-	double inputFeedbackPartial,
-		forgetFeedbackPartial;
+		cell_hidden_partial;
+	double input_hidden_partial,
+		forget_hidden_partial;
 	__device__ double activateIn(double data);
 	__device__ double activateOut(double data);
 	MemoryCell(int c);
