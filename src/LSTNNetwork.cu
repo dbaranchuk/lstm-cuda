@@ -154,7 +154,9 @@ vector<double> LSTMNetwork::train(vector<double> input, vector<double> target) {
     cudaFree(activations);
     free(output);
 
-    for (int i = 0; i < blocks.size() * blocks[0].nCells; i++)
+    cout << blocks.size() * blocks[0].nCells;
+    for (int i = 0; i < blocks.size(); i++)
+
         cout << activations[i];
 
     output = (double *)malloc(sizeof(double) * layer.size());
