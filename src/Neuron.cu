@@ -1,10 +1,3 @@
-/*
- * Neuron.cpp
- *
- *  Created on: Jun 22, 2016
- *      Author: trabucco
- */
-
 #include "Neuron.cuh"
 
 long long Neuron::n = 0;
