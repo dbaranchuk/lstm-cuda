@@ -30,6 +30,7 @@ int main(int argc, char *argv[]) {
 		return -1;
 	}
 
+    long long networkStart, networkEnd, sumTime = 0;
     networkStart = getMSec();
     DatasetAdapter dataset = DatasetAdapter();
     networkEnd = getMSec();
@@ -44,7 +45,7 @@ int main(int argc, char *argv[]) {
 	//int sumNeurons = (blocks * cells);
 	double mse = 0;
 	double learningRate = atof(argv[1]);
-	long long networkStart, networkEnd, sumTime = 0;
+
 
 	LSTMNetwork network = LSTMNetwork(emb_size, blocks, cells,
 	                                  learningRate, num_classes);
