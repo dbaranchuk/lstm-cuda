@@ -7,7 +7,7 @@
 
 using namespace std;
 
-class DATA {
+class Data {
 private:
 	int emb_size = 64;
 	int num_classes = 10;
