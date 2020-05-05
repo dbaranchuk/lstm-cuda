@@ -204,9 +204,10 @@ vector<double> LSTMNetwork::train(vector<double> input, vector<double> target) {
         layer[j] = *Neuron::copyFromGPU(neuronBuffer[j]);
     } free(neuronBuffer);
     cudaFree(layerNeurons);
+    cudaFree(errorSum);
 
 
-    double **errorChunks, *errorSum;
+    double **errorChunks;
     cudaMalloc((void **)&errorChunks, (sizeof(double *) * blocks.size()));
     cudaMalloc((void **)&errorSum, (sizeof(double) * blocks[0].nConnections));
     cudaMemset(&errorSum[0], 0.0, (sizeof(double) * blocks[0].nConnections));
