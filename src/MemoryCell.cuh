@@ -25,8 +25,8 @@ public:
 		state, previousState,
 		feedback, previousFeedback,
 		cellFeedbackPartial;
-	double inputFeedbackPartial, inputStatePartial,
-		forgetFeedbackPartial, forgetStatePartial;
+	double inputFeedbackPartial,
+		forgetFeedbackPartial;
 	__device__ double activateIn(double data);
 	__device__ double activateOut(double data);
 	MemoryCell(int c);

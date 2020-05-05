@@ -16,9 +16,7 @@ MemoryCell::MemoryCell(int c) {
 	cellFeedbackWeight = d(g);
 	cellFeedbackPartial = 0;
 	inputFeedbackPartial = 0;
-	inputStatePartial = 0;
 	forgetFeedbackPartial = 0;
-	forgetStatePartial = 0;
 
 	cellDataWeight = (double *)malloc(sizeof(double) * c);
 	cellDataPartial = (double *)malloc(sizeof(double) * c);
