@@ -175,8 +175,8 @@ vector<double> LSTMNetwork::train(vector<double> input, vector<double> target) {
     cudaFree(connections);
 
     cout << layer.size();
-    for (int i = 0; i < layer.size(); i++)
-        cout << output[i] << " ";
+    //for (int i = 0; i < layer.size(); i++)
+    //    cout << output[i] << " ";
 
     // start backward pass
     double *weightedError;

@@ -60,6 +60,7 @@ int main(int argc, char *argv[]) {
 			DatasetExample data = dataset.getChar();
 			error = network.train(target.getOutputFromTarget(data.current),
 					target.getOutputFromTarget(data.next));
+			std::cout << error << " ";
 		}
 
 		dataset.reset();
