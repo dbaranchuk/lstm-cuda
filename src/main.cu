@@ -55,7 +55,6 @@ int main(int argc, char *argv[]) {
 		for (int i = 0; i < num_batches; i++) {
 			vector<double> onehot_target = data.get_onehot_target(std::rand() % num_classes);
 			vector<vector<double>> embs = data.get_emb_sequence(seq_len);
-			cout << seq_len << " " <<  embs[0].size()  << " " << endl;
             loss += model.train(embs, onehot_target);
 		}
 		loss /= num_batches;
