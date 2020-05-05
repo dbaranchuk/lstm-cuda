@@ -90,7 +90,7 @@ int main(int argc, char *argv[]) {
 
 		cout << "Epoch " << e << " completed in " << (networkEnd - networkStart) << "msecs" << endl;
 		cout << "Error[" << e << "] = " << mse << endl;
-		cout << "Accuracy[" << e << "] = " << (100.0 * (float)c / (float)n) << endl;}
+		cout << "Accuracy[" << e << "] = " << (100.0 * (float)c / (float)n) << endl;
 		dataset.reset();
 	}
 	return 0;
