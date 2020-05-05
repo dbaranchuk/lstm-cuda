@@ -2,23 +2,24 @@
 
 __global__ void forwardPass(Neuron **neurons, double *connections, double *activations, int size) {
 	int maxId = gridDim.x * blockDim.x;
-	int idx = (threadIdx.x + blockIdx.x * blockDim.x) + (maxId * i);
-	if (idx < size) {
-		activations[idx] = neurons[idx]->forward(connections);
-	}
+	//int idx = (threadIdx.x + blockIdx.x * blockDim.x) + (maxId * i);
+	//if (idx < size) {
+	for (int i = 0; i < size; i++)
+		activations[i] = neurons[i]->forward(connections);
+	//}
 }
 
-__global__ void backwardPass(Neuron **neurons, double *weightedError, double *errorSum, 
-							 double learningRate, int connections, int size) {
-	int maxId = gridDim.x * blockDim.x;
-	int idx = (threadIdx.x + blockIdx.x * blockDim.x) + (maxId * i);
-	if (idx < size) {
-		double *contribution = neurons[idx]->backward(weightedError[idx], learningRate);
-		for (int j = 0; j < connections; j++) {
-			errorSum[j] += contribution[j];
-		}
-	}
-}
+//__global__ void backwardPass(Neuron **neurons, double *weightedError, double *errorSum,
+//							 double learningRate, int connections, int size) {
+//	int maxId = gridDim.x * blockDim.x;
+//	int idx = (threadIdx.x + blockIdx.x * blockDim.x) + (maxId * i);
+//	if (idx < size) {
+//		double *contribution = neurons[idx]->backward(weightedError[idx], learningRate);
+//		for (int j = 0; j < connections; j++) {
+//			errorSum[j] += contribution[j];
+//		}
+//	}
+//}
 
 //__global__ void forwardPassLSTM(MemoryBlock **blocks, double *connections, double *activations, int size, int cycles) {
 //	int maxId = gridDim.x * blockDim.x;
@@ -31,13 +32,12 @@ __global__ void backwardPass(Neuron **neurons, double *weightedError, double *er
 //	}
 //}
 
-__global__ void forwardPassLSTM(MemoryBlock *block, double **connections, double *activations, int size, int cycles) {
+__global__ void forwardPassLSTM(MemoryBlock *block, double **connections, double *activations, int cycles) {
 	for (int i = 0; i < (cycles); i++) {
-		double *blockActivation = block->forward(connections[i]);
-		for (int j = 0; j < block->nCells; j++) 
-			activations[idx * block->nCells + j] = blockActivation[j];
-		
+		double *local_activations = block->forward(connections[i]);
 	}
+    for (int i = 0; i < block->nCells; i++)
+        activations[i] = local_activations[i];
 }
 
 //__global__ void backwardPassLSTM(MemoryBlock **blocks, double **weightedError, double *errorSum, double learningRate, int connections, int size, int cycles) {
@@ -131,26 +131,26 @@ TextClassifier::~TextClassifier() {}
 //}
 
 double TextClassifier::train(vector<vector<double>> &inputs, vector<double> &target) {
-	if (input.size() != inputSize) {
+	if (inputs[0].size() != inputSize) {
 	    cout << "Target size mismatch" << endl;
-		return vector<double>();
+		return 0.0;
 	}
     // Load input data to GPU
     double **connections, *lstm_activations;
 	cudaMalloc((void **)&connections, sizeof(double *) * inputs.size());
     cudaMalloc((void **)&lstm_activations, sizeof(double) * block.nCells);
-    for (int i = 0; i < inputs.size(); i++)
-		cudaMalloc((void **)&connections[i], sizeof(double) * inputs[0].size());
-        cudaMemcpy(connections[i].data(), inputs[i].data(), 
-        		(sizeof(double) * inputs[0].size()), cudaMemcpyHostToDevice);
-
+    for (int i = 0; i < inputs.size(); i++) {
+        cudaMalloc((void **) &connections[i], sizeof(double) * inputs[0].size());
+        cudaMemcpy(connections[i].data(), inputs[i].data(),
+                   (sizeof(double) * inputs[0].size()), cudaMemcpyHostToDevice);
+    }
 	cout << inputs[0].size() << " " << block.nConnections;
 	// TODO
-	for (int i = 0; i < inputs.size(); i++)
-    	cudaMemcpy(block.impulses[i].data(), connections[i].data(),
-    			(sizeof(double) * block.nConnections), cudaMemcpyDeviceToHost);
-
-    MemoryBlock *device_block = MemoryBlock::copyToGPU(&block);
+	for (int i = 0; i < inputs.size(); i++) {
+        cudaMemcpy(block.impulses[i].data(), connections[i].data(),
+                   (sizeof(double) * block.nConnections), cudaMemcpyDeviceToHost);
+    }
+    MemoryBlock *device_block = MemoryBlock::copyToGPU(block);
     forwardPassLSTM<<<maxBlocks, maxThreads>>>(device_block, connections, lstm_activations, inputs.size());
     cudaDeviceSynchronize();
 	cudaFree(connections);
@@ -165,13 +165,13 @@ double TextClassifier::train(vector<vector<double>> &inputs, vector<double> &tar
 	// Put lstm activation to impulse for backprop
     Neuron **layerNeurons;
     for (int j = 0; j < logits_layer.size(); j++) {
-        cudaMemcpy(layer[j].impulse.data(), lstm_activations.data(), 
+        cudaMemcpy(logits_layer[j].impulse.data(), lstm_activations.data(),
         		sizeof(double) * logits_layer[j].connections, cudaMemcpyDeviceToHost);
     }
 	// Copy linear logits_layer to device
     cudaMalloc((void **)&layerNeurons, sizeof(Neuron *) * logits_layer.size());
     for (int j = 0; j < logits_layer.size(); j++) {
-        Neuron *device_neuron = Neuron::copyToGPU(&layer[j]);
+        Neuron *device_neuron = Neuron::copyToGPU(&logits_layer[j]);
         cudaMemcpy(&layerNeurons[j], &device_neuron, sizeof(Neuron *), cudaMemcpyHostToDevice);
     }
     
