@@ -30,7 +30,6 @@ int main(int argc, char *argv[]) {
 		return -1;
 	}
 
-	int updatePoints = 10;
 	int maxEpoch = 10;
 	int trainingSize = 500;
 	int blocks = atoi(argv[2]);
