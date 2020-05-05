@@ -8,7 +8,7 @@ OutputTarget::OutputTarget(int n, int c) {
 		vector<double> temp;
 		for (int j = 0; j < n; j++) {
 			if (i == j) temp.push_back(1.0);
-			else temp.push_back(-1.0);
+			else temp.push_back(0.0);
 		} classifiers.push_back(temp);
 	}
 }

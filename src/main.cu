@@ -42,7 +42,8 @@ int main(int argc, char *argv[]) {
 	int num_classes = dataset.getCharSize();
 	int blocks = atoi(argv[2]);
 	int cells = atoi(argv[3]);
-	//int sumNeurons = (blocks * cells);
+	int seq_len = 10;
+
 	double mse = 0;
 	double learningRate = atof(argv[1]);
 
@@ -58,8 +59,13 @@ int main(int argc, char *argv[]) {
 		networkStart = getMSec();
 		for (int i = 0; i < trainingSize && dataset.nextChar(); i++) {
 			DatasetExample data = dataset.getChar();
-			error = network.train(target.getOutputFromTarget(data.current),
-					target.getOutputFromTarget(data.next));
+			vector<vector<double>> inputs;
+            vector<vector<double>> targets;
+			for (int j=0; j < seq_len; j++) {
+                inputs.push_back(target.getOutputFromTarget(data.current));
+                targets.push_back(target.getOutputFromTarget(data.next));
+            }
+            error = network.train(inputs, targets);
 		}
 
 		dataset.reset();

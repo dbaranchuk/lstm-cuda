@@ -125,16 +125,23 @@ vector<double> LSTMNetwork::classify(vector<double> input) {
 	} else return vector<double>();
 }
 
-vector<double> LSTMNetwork::train(vector<double> input, vector<double> target) {
+vector<double> LSTMNetwork::train(vector<vector<double>> &inputs, vector<vector<double>> &targets) {
 	if (input.size() != inputSize) {
 	    cout << "Target size mismatch" << endl;
 		return vector<double>();
 	}
     // start forward pass
-    double *connections, *activations;
-	cudaMalloc((void **)&connections, sizeof(double) * input.size());
-	cudaMemcpy(&connections[0], &input[0], (sizeof(double) * input.size()), cudaMemcpyHostToDevice);
-    cudaMalloc((void **)&activations, (sizeof(double) * blocks.size() * blocks[0].nCells));
+    double **connections, **activations;
+	cudaMalloc((void ***)&connections, sizeof(double) * inputs.size() * inputs[0].size());
+    cudaMalloc((void ***)&activations, sizeof(double) * inputs.size() * block.nCells);
+    for (int i = 0; i < inputs.size(); i++)
+        cudaMemcpy(&connections[0], &input[0], (sizeof(double) * inputs[0].size()), cudaMemcpyHostToDevice);
+
+
+
+
+
+
 
     MemoryBlock **deviceBlocks;
     for (int i = 0; i < blocks.size(); i++) {
