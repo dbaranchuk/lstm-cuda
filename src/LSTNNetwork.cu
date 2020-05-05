@@ -1,10 +1,3 @@
-/*
- * LSTMNetwork.cpp
- *
- *  Created on: Jul 27, 2016
- *      Author: trabucco
- */
-
 #include "LSTMNetwork.cuh"
 
 __global__ void forwardPass(Neuron **neurons, double *connections, double *activations, int size, int cycles) {
@@ -58,19 +51,15 @@ __global__ void backwardPassLSTM(MemoryBlock **blocks, double **weightedError, d
 	}
 }
 
-LSTMNetwork::LSTMNetwork(int is, int b, int c, double l, double d) {
-	// TODO Auto-generated constructor stub
+LSTMNetwork::LSTMNetwork(int is, int b, int c, double l) {
 	inputSize = is;
 	learningRate = l;
-	decayRate = d;
 	for (int i = 0; i < b; i++) {
 		blocks.push_back(MemoryBlock(c, is));
 	}
 }
 
-LSTMNetwork::~LSTMNetwork() {
-	// TODO Auto-generated destructor stub
-}
+LSTMNetwork::~LSTMNetwork() {}
 
 int LSTMNetwork::getPreviousNeurons() {
 	return (layers.size() == 0) ? (blocks.size() * blocks[0].nCells) : layers[layers.size() - 1].size();
@@ -251,7 +240,6 @@ vector<double> LSTMNetwork::train(vector<double> input, vector<double> target) {
 		cudaFree(errorChunks);
 		cudaFree(errorSum);
 
-		learningRate *= decayRate;
 		vector<double> result(&output[0], &output[layers[layers.size() - 1].size()]);
 		free(output);
 		return result;

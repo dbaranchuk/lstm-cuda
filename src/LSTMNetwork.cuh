@@ -26,13 +26,12 @@ private:
 	const int maxThreads = 256;
 	unsigned int inputSize;
 	double learningRate;
-	double decayRate;
 	vector<MemoryBlock> blocks;
 	vector<vector<Neuron> > layers;
 	vector<double> timeSteps;
 	int getPreviousNeurons();
 public:
-	LSTMNetwork(int is, int b, int c, double l, double d);
+	LSTMNetwork(int is, int b, int c, double l);
 	virtual ~LSTMNetwork();
 	vector<double> classify(vector<double> input);
 	vector<double> train(vector<double> input, vector<double> target);
