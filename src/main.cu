@@ -46,9 +46,9 @@ int main(int argc, char *argv[]) {
 	networkEnd = getMSec();
 	cout << "Language Dataset loaded in " << (networkEnd - networkStart) << "msecs" << endl;
 
-	LSTMNetwork network = LSTMNetwork(dataset.getCharSize(), blocks, cells, learningRate);
+	LSTMNetwork network = LSTMNetwork(dataset.getCharSize(), blocks, cells,
+	                                  learningRate, dataset.getCharSize());
 	OutputTarget target = OutputTarget(dataset.getCharSize(), dataset.getCharSize());
-	network.addLayer(dataset.getCharSize());
 	cout << "Network initialized" << endl;
 
 	for (int e = 0; e < maxEpoch; e++) {

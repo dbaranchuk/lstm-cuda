@@ -23,7 +23,7 @@ private:
 	vector<Neuron> layer;
 	vector<double> timeSteps;
 public:
-	LSTMNetwork(int is, int b, int c, double l);
+	LSTMNetwork(int is, int b, int c, double l, int num_classes);
 	virtual ~LSTMNetwork();
 	vector<double> classify(vector<double> input);
 	vector<double> train(vector<double> input, vector<double> target);
