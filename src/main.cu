@@ -31,10 +31,10 @@ int main(int argc, char *argv[]) {
 	}
 
 	int maxEpoch = 10;
-	int trainingSize = 256;
+	int trainingSize = 128;
 	int blocks = atoi(argv[2]);
 	int cells = atoi(argv[3]);
-	int sumNeurons = (blocks * cells);
+	//int sumNeurons = (blocks * cells);
 	double mse = 0;
 	double learningRate = atof(argv[1]);
 	long long networkStart, networkEnd, sumTime = 0;
@@ -60,7 +60,7 @@ int main(int argc, char *argv[]) {
 			DatasetExample data = dataset.getChar();
 			error = network.train(target.getOutputFromTarget(data.current),
 					target.getOutputFromTarget(data.next));
-			std::cout << error << " ";
+			cout << error[0] << " ";
 		}
 
 		dataset.reset();
