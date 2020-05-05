@@ -19,18 +19,19 @@
 #include <random>
 using namespace std;
 
-class LSTMCell: public BaseNode {
+class MemoryBlock : public BaseNode {
 private:
 	static long long n;
 public:
 	int nConnections;
 	int nCells;
-	vector<double> state;
-
+	MemoryCell **cells;
 	double *inputDataWeight,
 		*forgetDataWeight, *outputDataWeight,
 		*bias, *impulse,
-		*inputFeedbackWeight, *forgetFeedbackWeight, *outputFeedbackWeight;
+		*inputFeedbackWeight,
+		*forgetFeedbackWeight,
+		*outputFeedbackWeight;
 	double input, inputPrime,
 		forget, forgetPrime,
 		output, outputPrime;
