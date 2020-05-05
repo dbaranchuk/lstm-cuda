@@ -29,7 +29,8 @@ __global__ void forwardPassLSTM(MemoryBlock **blocks, double *connections, doubl
 		int idx = (threadIdx.x + blockIdx.x * blockDim.x) + (maxId * i);
 		if (idx < size) {
 			double *blockActivation = blocks[idx]->forward(connections);
-			for (int j = 0; j < blocks[i]->nCells; j++) activations[idx * blocks[i]->nCells + j] = blockActivation[j];
+			for (int j = 0; j < blocks[i]->nCells; j++)
+			    activations[idx * blocks[i]->nCells + j] = blockActivation[j];
 		}
 	}
 }
@@ -177,6 +178,7 @@ vector<double> LSTMNetwork::train(vector<double> input, vector<double> target) {
             Neuron *dn = Neuron::copyToGPU(&layers[i][j]);
             cudaMemcpy(&layerNeurons[j], &dn, sizeof(Neuron *), cudaMemcpyHostToDevice);
         } deviceNeurons[i] = layerNeurons;
+
         forwardPass<<<maxBlocks, maxThreads>>>(layerNeurons, connections, activations, layers[i].size(), ceil((double)layers[i].size() / (double)(maxBlocks * maxThreads)));
         cudaDeviceSynchronize();
         cudaFree(connections);

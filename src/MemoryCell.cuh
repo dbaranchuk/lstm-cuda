@@ -1,10 +1,3 @@
-/*
- * MemoryCell.h
- *
- *  Created on: Jul 18, 2016
- *      Author: trabucco
- */
-
 #ifndef MEMORYCELL_H_
 #define MEMORYCELL_H_
 

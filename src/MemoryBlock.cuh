@@ -29,9 +29,7 @@ public:
 	double *inputDataWeight,
 		*forgetDataWeight, *outputDataWeight,
 		*bias, *impulse,
-		*inputFeedbackWeight, *inputStateWeight,
-		*forgetFeedbackWeight, *forgetStateWeight,
-		*outputFeedbackWeight, *outputStateWeight;
+		*inputFeedbackWeight, *forgetFeedbackWeight, *outputFeedbackWeight;
 	double input, inputPrime,
 		forget, forgetPrime,
 		output, outputPrime;

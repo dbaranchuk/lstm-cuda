@@ -26,7 +26,7 @@ struct tm *getDate() {
 int main(int argc, char *argv[]) {
 	cout << "Program initializing" << endl;
 	if (argc < 4) {
-		cout << argv[0] << " <learning rate> <blocks> <cells> <size ...>" << endl;
+		cout << argv[0] << " <learning rate> <blocks> <cells>" << endl;
 		return -1;
 	}
 
@@ -48,13 +48,8 @@ int main(int argc, char *argv[]) {
 
 	LSTMNetwork network = LSTMNetwork(dataset.getCharSize(), blocks, cells, learningRate);
 	OutputTarget target = OutputTarget(dataset.getCharSize(), dataset.getCharSize());
+	network.addLayer(dataset.getCharSize());
 	cout << "Network initialized" << endl;
-
-	for (int i = 0; i < (argc - 4); i++) {
-	    std::cout << atoi(argv[4 + i]);
-		network.addLayer(atoi(argv[4 + i]));
-		sumNeurons += atoi(argv[4 + i]);
-	} network.addLayer(dataset.getCharSize());
 
 	for (int e = 0; e < maxEpoch; e++) {
 		int c = 0, n = 0;

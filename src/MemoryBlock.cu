@@ -1,10 +1,3 @@
-/*
- * MemoryCell.cpp
- *
- *  Created on: Jul 18, 2016
- *      Author: trabucco
- */
-
 #include "MemoryBlock.cuh"
 
 long long int MemoryBlock::n = 0;
@@ -22,20 +15,14 @@ MemoryBlock::MemoryBlock(int cl, int cn) {
 	bias = (double *)calloc(3, sizeof(double));
 	cells = (MemoryCell **)malloc(sizeof(MemoryCell *) * nCells);
 	inputFeedbackWeight = (double *)malloc(sizeof(double) * nCells);
-	inputStateWeight = (double *)malloc(sizeof(double) * nCells);
 	forgetFeedbackWeight = (double *)malloc(sizeof(double) * nCells);
-	forgetStateWeight = (double *)malloc(sizeof(double) * nCells);
 	outputFeedbackWeight = (double *)malloc(sizeof(double) * nCells);
-	outputStateWeight = (double *)malloc(sizeof(double) * nCells);
 
 	for (int i = 0; i < nCells; i++) {
 		cells[i] = (new MemoryCell(nConnections));
 		inputFeedbackWeight[i] = (d(g));
-		inputStateWeight[i] = (d(g));
 		forgetFeedbackWeight[i] = (d(g));
-		forgetStateWeight[i] = (d(g));
 		outputFeedbackWeight[i] = (d(g));
-		outputStateWeight[i] = (d(g));
 	}
 
 	impulse = (double *)malloc(sizeof(double) * nConnections);
@@ -80,12 +67,9 @@ __device__ double *MemoryBlock::forward(double *input) {
 	double outputSum = bias[2];
 
 	for (int i = 0; i < nCells; i++) {
-		inputSum += (inputFeedbackWeight[i] * cells[i]->feedback) +
-				(inputStateWeight[i] * cells[i]->state);
-		forgetSum += (forgetFeedbackWeight[i] * cells[i]->feedback) +
-				(forgetStateWeight[i] * cells[i]->state);
-		outputSum += (outputFeedbackWeight[i] * cells[i]->feedback) +
-				(outputStateWeight[i] * cells[i]->state);
+		inputSum += (inputFeedbackWeight[i] * cells[i]->feedback);
+		forgetSum += (forgetFeedbackWeight[i] * cells[i]->feedback);
+		outputSum += (outputFeedbackWeight[i] * cells[i]->feedback);
 	}
 
 	// find the weighted sum of all input
@@ -121,15 +105,12 @@ __device__ double *MemoryBlock::backward(double *errorPrime, double learningRate
 			*forgetDataPartialSum = new double[nConnections] {0};
 	double blockSum = 0,
 			inputFeedbackPartialSum = 0,
-			inputStatePartialSum = 0,
-			forgetFeedbackPartialSum = 0,
-			forgetStatePartialSum = 0;
+			forgetFeedbackPartialSum = 0;
 
 	for (int i = 0; i < nCells; i++) {
 		blockSum += cells[i]->activationOut * errorPrime[i];
 		eta[i] = (output * cells[i]->activationOutPrime * errorPrime[i]);
 		outputFeedbackWeight[i] -= learningRate * blockSum * outputPrime * cells[i]->feedback;
-		outputStateWeight[i] -= learningRate * blockSum * outputPrime * cells[i]->state;
 	}
 
 	for (int i = 0; i < nConnections; i++) {
@@ -151,14 +132,10 @@ __device__ double *MemoryBlock::backward(double *errorPrime, double learningRate
 		cells[i]->cellFeedbackWeight -= learningRate * eta[i] * cells[i]->cellFeedbackPartial;
 
 		cells[i]->forgetFeedbackPartial = cells[i]->forgetFeedbackPartial * forget + cells[i]->previousState * forgetPrime * cells[i]->previousFeedback;
-		cells[i]->forgetStatePartial = cells[i]->forgetStatePartial * forget + cells[i]->previousState * forgetPrime * cells[i]->previousState;
 		forgetFeedbackPartialSum += eta[i] *cells[i]->forgetFeedbackPartial;
-		forgetStatePartialSum += eta[i] *cells[i]->forgetStatePartial;
 
 		cells[i]->inputFeedbackPartial = cells[i]->inputFeedbackPartial * forget + cells[i]->activationIn * inputPrime * cells[i]->previousFeedback;
-		cells[i]->inputStatePartial = cells[i]->inputStatePartial * forget + cells[i]->activationIn * inputPrime * cells[i]->previousState;
 		inputFeedbackPartialSum += eta[i] *cells[i]->inputFeedbackPartial;
-		inputStatePartialSum += eta[i] *cells[i]->inputStatePartial;
 	}
 
 	// update the input, output, and forget weights
@@ -168,9 +145,7 @@ __device__ double *MemoryBlock::backward(double *errorPrime, double learningRate
 			inputDataWeight[j] -= learningRate * inputDataPartialSum[j];	// invalid read of size 8
 		}
 		inputFeedbackWeight[i] -= learningRate * inputFeedbackPartialSum;
-		inputStateWeight[i] -= learningRate * inputFeedbackPartialSum;
 		forgetFeedbackWeight[i] -= learningRate * forgetFeedbackPartialSum;
-		forgetStateWeight[i] -= learningRate * forgetStatePartialSum;
 	}
 
 	double *temp = new double[nConnections];	// potential error
@@ -197,13 +172,10 @@ MemoryBlock *MemoryBlock::copyToGPU(MemoryBlock *memory) {
 	} cudaMemcpy(&(memoryBlock->cells), &memoryCells, sizeof(MemoryCell **), cudaMemcpyHostToDevice);
 
 
-	double *ifw, *isw, *ffw, *fsw, *ofw, *osw, *b;
+	double *ifw, *ffw, *ofw, *b;
 	cudaMalloc((void **)&ifw, (sizeof(double) * memory->nCells));
-	cudaMalloc((void **)&isw, (sizeof(double) * memory->nCells));
 	cudaMalloc((void **)&ffw, (sizeof(double) * memory->nCells));
-	cudaMalloc((void **)&fsw, (sizeof(double) * memory->nCells));
 	cudaMalloc((void **)&ofw, (sizeof(double) * memory->nCells));
-	cudaMalloc((void **)&osw, (sizeof(double) * memory->nCells));
 	cudaMalloc((void **)&b, (sizeof(double) * 3));
 
 	double *idw, *fdw, *odw, *i;
@@ -214,11 +186,8 @@ MemoryBlock *MemoryBlock::copyToGPU(MemoryBlock *memory) {
 	cudaDeviceSynchronize();
 
 	cudaMemcpy(ifw, memory->inputFeedbackWeight, (sizeof(double) * memory->nCells), cudaMemcpyHostToDevice);
-	cudaMemcpy(isw, memory->inputStateWeight, (sizeof(double) * memory->nCells), cudaMemcpyHostToDevice);
 	cudaMemcpy(ffw, memory->forgetFeedbackWeight, (sizeof(double) * memory->nCells), cudaMemcpyHostToDevice);
-	cudaMemcpy(fsw, memory->forgetStateWeight, (sizeof(double) * memory->nCells), cudaMemcpyHostToDevice);
 	cudaMemcpy(ofw, memory->outputFeedbackWeight, (sizeof(double) * memory->nCells), cudaMemcpyHostToDevice);
-	cudaMemcpy(osw, memory->outputStateWeight, (sizeof(double) * memory->nCells), cudaMemcpyHostToDevice);
 	cudaMemcpy(b, memory->bias, (sizeof(double) * 3), cudaMemcpyHostToDevice);
 	cudaMemcpy(idw, memory->inputDataWeight, (sizeof(double) * memory->nConnections), cudaMemcpyHostToDevice);
 	cudaMemcpy(fdw, memory->forgetDataWeight, (sizeof(double) * memory->nConnections), cudaMemcpyHostToDevice);
@@ -227,11 +196,8 @@ MemoryBlock *MemoryBlock::copyToGPU(MemoryBlock *memory) {
 	cudaDeviceSynchronize();
 
 	cudaMemcpy(&(memoryBlock->inputFeedbackWeight), &(ifw), (sizeof(double *)), cudaMemcpyHostToDevice);
-	cudaMemcpy(&(memoryBlock->inputStateWeight), &(isw), (sizeof(double *)), cudaMemcpyHostToDevice);
 	cudaMemcpy(&(memoryBlock->forgetFeedbackWeight), &(ffw), (sizeof(double *)), cudaMemcpyHostToDevice);
-	cudaMemcpy(&(memoryBlock->forgetStateWeight), &(fsw), (sizeof(double *)), cudaMemcpyHostToDevice);
 	cudaMemcpy(&(memoryBlock->outputFeedbackWeight), &(ofw), (sizeof(double *)), cudaMemcpyHostToDevice);
-	cudaMemcpy(&(memoryBlock->outputStateWeight), &(osw), (sizeof(double *)), cudaMemcpyHostToDevice);
 	cudaMemcpy(&(memoryBlock->bias), &(b), (sizeof(double *)), cudaMemcpyHostToDevice);
 	cudaMemcpy(&(memoryBlock->inputDataWeight), &(idw), (sizeof(double *)), cudaMemcpyHostToDevice);
 	cudaMemcpy(&(memoryBlock->forgetDataWeight), &(fdw), (sizeof(double *)), cudaMemcpyHostToDevice);
@@ -243,8 +209,6 @@ MemoryBlock *MemoryBlock::copyToGPU(MemoryBlock *memory) {
 }
 
 MemoryBlock *MemoryBlock::copyFromGPU(MemoryBlock *memory) {
-
-
 
 	MemoryBlock *memoryBlock;
 	memoryBlock = (MemoryBlock *)malloc((sizeof(MemoryBlock)));
@@ -262,14 +226,11 @@ MemoryBlock *MemoryBlock::copyFromGPU(MemoryBlock *memory) {
 	} memcpy(&(memoryBlock->cells), &memoryCells, sizeof(MemoryCell *));
 
 
-	double *ifw, *isw, *ffw, *fsw, *ofw, *osw, *b;
+	double *ifw, *ffw, *ofw, *osw, *b;
 	ifw = (double *)malloc((sizeof(double) * memoryBlock->nCells));
 	ifw = (double *)malloc((sizeof(double) * memoryBlock->nCells));
-	isw = (double *)malloc((sizeof(double) * memoryBlock->nCells));
 	ffw = (double *)malloc((sizeof(double) * memoryBlock->nCells));
-	fsw = (double *)malloc((sizeof(double) * memoryBlock->nCells));
 	ofw = (double *)malloc((sizeof(double) * memoryBlock->nCells));
-	osw = (double *)malloc((sizeof(double) * memoryBlock->nCells));
 	b = (double *)malloc((sizeof(double) * 3));
 
 	double *idw, *fdw, *odw, *i;
@@ -280,11 +241,8 @@ MemoryBlock *MemoryBlock::copyFromGPU(MemoryBlock *memory) {
 	cudaDeviceSynchronize();
 
 	cudaMemcpy(ifw, memoryBlock->inputFeedbackWeight, (sizeof(double) * memoryBlock->nCells), cudaMemcpyDeviceToHost);
-	cudaMemcpy(isw, memoryBlock->inputStateWeight, (sizeof(double) * memoryBlock->nCells), cudaMemcpyDeviceToHost);
 	cudaMemcpy(ffw, memoryBlock->forgetFeedbackWeight, (sizeof(double) * memoryBlock->nCells), cudaMemcpyDeviceToHost);
-	cudaMemcpy(fsw, memoryBlock->forgetStateWeight, (sizeof(double) * memoryBlock->nCells), cudaMemcpyDeviceToHost);
 	cudaMemcpy(ofw, memoryBlock->outputFeedbackWeight, (sizeof(double) * memoryBlock->nCells), cudaMemcpyDeviceToHost);
-	cudaMemcpy(osw, memoryBlock->outputStateWeight, (sizeof(double) * memoryBlock->nCells), cudaMemcpyDeviceToHost);
 	cudaMemcpy(b, memoryBlock->bias, (sizeof(double) * 3), cudaMemcpyDeviceToHost);
 	cudaMemcpy(idw, memoryBlock->inputDataWeight, (sizeof(double) * memoryBlock->nConnections), cudaMemcpyDeviceToHost);
 	cudaMemcpy(fdw, memoryBlock->forgetDataWeight, (sizeof(double) * memoryBlock->nConnections), cudaMemcpyDeviceToHost);
@@ -293,11 +251,8 @@ MemoryBlock *MemoryBlock::copyFromGPU(MemoryBlock *memory) {
 	cudaDeviceSynchronize();
 
 	memcpy(&(memoryBlock->inputFeedbackWeight), &ifw, (sizeof(double *)));
-	memcpy(&(memoryBlock->inputStateWeight), &isw, (sizeof(double *)));
 	memcpy(&(memoryBlock->forgetFeedbackWeight), &ffw, (sizeof(double *)));
-	memcpy(&(memoryBlock->forgetStateWeight), &fsw, (sizeof(double *)));
 	memcpy(&(memoryBlock->outputFeedbackWeight), &ofw, (sizeof(double *)));
-	memcpy(&(memoryBlock->outputStateWeight), &osw, (sizeof(double *)));
 	memcpy(&(memoryBlock->bias), &b, (sizeof(double *)));
 	memcpy(&(memoryBlock->inputDataWeight), &idw, (sizeof(double *)));
 	memcpy(&(memoryBlock->forgetDataWeight), &fdw, (sizeof(double *)));

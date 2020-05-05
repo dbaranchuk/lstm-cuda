@@ -1,16 +1,8 @@
-/*
- * MemoryCell.cpp
- *
- *  Created on: Jul 18, 2016
- *      Author: trabucco
- */
-
 #include "MemoryCell.cuh"
 
 long long MemoryCell::n = 0;
 
 MemoryCell::MemoryCell(int c) {
-	// TODO Auto-generated constructor stub
 	nConnections = c;
 	activationIn = 0; activationInPrime = 0;
 	activationOut = 0; activationOutPrime = 0;
@@ -41,9 +33,7 @@ MemoryCell::MemoryCell(int c) {
 	}
 }
 
-MemoryCell::~MemoryCell() {
-	// TODO Auto-generated destructor stub
-}
+MemoryCell::~MemoryCell() {}
 
 __device__ double MemoryCell::activateIn(double data) {
 	activationIn = activationFunction(data);
