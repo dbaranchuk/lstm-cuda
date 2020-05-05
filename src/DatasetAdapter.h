@@ -1,10 +1,3 @@
-/*
- * DatasetAdapter.h
- *
- *  Created on: Jul 26, 2016
- *      Author: trabucco
- */
-
 #ifndef DATASETADAPTER_H_
 #define DATASETADAPTER_H_
 

@@ -97,13 +97,5 @@ int main(int argc, char *argv[]) {
 
 		dataset.reset();
 	}
-
-	//vector<vector<double> > seed;
-	//seed.push_back(target.getOutputFromTarget((int)'I'));
-	//for (int i = 0; i < 500; i++) {
-	//	vector<double> output = network.classify(seed[i]);
-	//	seed.push_back(output);
-    //	char text = (char)target.getTargetFromOutput(output);
-	//}
 	return 0;
 }

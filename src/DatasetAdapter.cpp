@@ -1,15 +1,8 @@
-/*
- * DatasetAdapter.cpp
- *
- *  Created on: Jul 26, 2016
- *      Author: trabucco
- */
-
 #include "DatasetAdapter.h"
 
 DatasetAdapter::DatasetAdapter() {
 	// TODO Auto-generated constructor stub
-	ifstream trainingDatasetFile("/stash/tlab/datasets/Language/nietzsche.txt");
+	ifstream trainingDatasetFile("penn-treebank/ptb.valid.txt");
 	charIndex = -1;
 
 	if (trainingDatasetFile.is_open()) {
@@ -21,9 +14,7 @@ DatasetAdapter::DatasetAdapter() {
 	} else cout << "Error opening files" << endl;
 }
 
-DatasetAdapter::~DatasetAdapter() {
-	// TODO Auto-generated destructor stub
-}
+DatasetAdapter::~DatasetAdapter() {}
 
 int DatasetAdapter::getCharSize() {
 	return charSize;

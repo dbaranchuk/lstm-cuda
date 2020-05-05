@@ -1,10 +1,3 @@
-/*
- * OutputTarget.h
- *
- *  Created on: Jun 23, 2016
- *      Author: trabucco
- */
-
 #ifndef OUTPUTTARGET_H_
 #define OUTPUTTARGET_H_
 

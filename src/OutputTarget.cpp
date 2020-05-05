@@ -1,10 +1,3 @@
-/*
- * OutputTarget.cpp
- *
- *  Created on: Jun 23, 2016
- *      Author: trabucco
- */
-
 #include "OutputTarget.h"
 
 OutputTarget::OutputTarget(int n, int c) {
