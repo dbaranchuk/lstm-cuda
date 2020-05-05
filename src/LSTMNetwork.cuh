@@ -27,7 +27,6 @@ public:
 	virtual ~LSTMNetwork();
 	vector<double> classify(vector<double> input);
 	vector<double> train(vector<double> input, vector<double> target);
-	vector<double> forward(vector<double> input);
 };
 
 #endif /* LSTMNETWORK_H_ */

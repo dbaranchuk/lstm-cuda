@@ -52,7 +52,7 @@ int main(int argc, char *argv[]) {
 	cout << "Network initialized" << endl;
 
 	for (int e = 0; e < maxEpoch; e++) {
-		int c = 0, n = 0;
+		//int c = 0, n = 0;
 		vector<double> error, output;
 
 		networkStart = getMSec();
@@ -64,14 +64,14 @@ int main(int argc, char *argv[]) {
 
 		dataset.reset();
 
-		for (int i = 0; i < trainingSize && dataset.nextChar(); i++) {
-			DatasetExample data = dataset.getChar();
-			output = network.classify(target.getOutputFromTarget(data.current));
+		//for (int i = 0; i < trainingSize && dataset.nextChar(); i++) {
+		//	DatasetExample data = dataset.getChar();
+		//	output = network.classify(target.getOutputFromTarget(data.current));
 
-			n++;
-			if (target.getTargetFromOutput(output) == (int)data.next) c++;
-		} networkEnd = getMSec();
-
+		//	n++;
+		//	if (target.getTargetFromOutput(output) == (int)data.next) c++;
+		//}
+		networkEnd = getMSec();
 		sumTime += (networkEnd - networkStart);
 
 		mse = 0;
@@ -81,7 +81,7 @@ int main(int argc, char *argv[]) {
 
 		cout << "Epoch " << e << " completed in " << (networkEnd - networkStart) << "msecs" << endl;
 		cout << "Error[" << e << "] = " << mse << endl;
-		cout << "Accuracy[" << e << "] = " << (100.0 * (float)c / (float)n) << endl;
+		//cout << "Accuracy[" << e << "] = " << (100.0 * (float)c / (float)n) << endl;
 		dataset.reset();
 	}
 	return 0;
