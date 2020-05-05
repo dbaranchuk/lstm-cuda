@@ -227,7 +227,8 @@ vector<double> LSTMNetwork::train(vector<double> input, vector<double> target) {
 		cudaDeviceSynchronize();
 
 		MemoryBlock **blockBuffer = (MemoryBlock **)malloc(sizeof(MemoryBlock *) * blocks.size());
-		cout << blocks.size() << " copy blocks " << cudaMemcpy(blockBuffer, deviceBlocks, (sizeof(MemoryBlock *) * blocks.size()), cudaMemcpyDeviceToHost);
+		//cout << blocks.size() << " copy blocks " <<
+		cudaMemcpy(blockBuffer, deviceBlocks, (sizeof(MemoryBlock *) * blocks.size()), cudaMemcpyDeviceToHost);
 
 		for (int i = 0; i < blocks.size(); i++) {
 			MemoryBlock temp = *MemoryBlock::copyFromGPU(blockBuffer[i]);
