@@ -40,12 +40,11 @@ int main(int argc, char *argv[]) {
 	int trainingSize = 256;
 	int emb_size = 64;
 	int num_classes = dataset.getCharSize();
-	int blocks = 1; //atoi(argv[2]);
+	int blocks = atoi(argv[2]);
 	int cells = atoi(argv[3]);
 	//int sumNeurons = (blocks * cells);
 	double mse = 0;
 	double learningRate = atof(argv[1]);
-
 
 	LSTMNetwork network = LSTMNetwork(emb_size, blocks, cells,
 	                                  learningRate, num_classes);
