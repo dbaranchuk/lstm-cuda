@@ -152,8 +152,8 @@ vector<double> LSTMNetwork::train(vector<double> input, vector<double> target) {
 		for (int i = 0; i < blocks.size(); i++) {
 			cudaMemcpy(&(blocks[i].impulse[0]), &connections[0], (sizeof(double) * blocks[i].nConnections), cudaMemcpyDeviceToHost);
 		} cudaMalloc((void **)&deviceBlocks, sizeof(MemoryBlock *) * blocks.size());
+
 		for (int i = 0; i < blocks.size(); i++) {
-			cout << "Test " << blocks[i].cells[0]->nConnections << endl;
 			MemoryBlock *db = MemoryBlock::copyToGPU(&blocks[i]);
 			cudaMemcpy(&deviceBlocks[i], &db, sizeof(MemoryBlock *), cudaMemcpyHostToDevice);
 		} forwardPassLSTM<<<maxBlocks, maxThreads>>>(deviceBlocks, connections, activations, blocks.size(), ceil((double)blocks.size() / (double)(maxBlocks * maxThreads)));
@@ -202,10 +202,10 @@ vector<double> LSTMNetwork::train(vector<double> input, vector<double> target) {
 			cudaDeviceSynchronize();
 			cudaFree(weightedError);
 			cudaMalloc((void **)&weightedError, (sizeof(double) * layers[i][0].connections));
-			cout << "copy sum " << cudaMemcpy(&weightedError[0], &errorSum[0], (sizeof(double) * layers[i][0].connections), cudaMemcpyDeviceToDevice);
+			//cout << "copy sum " << cudaMemcpy(&weightedError[0], &errorSum[0], (sizeof(double) * layers[i][0].connections), cudaMemcpyDeviceToDevice);
 
 			Neuron **neuronBuffer = (Neuron **)malloc(sizeof(Neuron) * layers[i].size());
-			cout << "copy neurons " << cudaMemcpy(&neuronBuffer[0], &deviceNeurons[i][0], (sizeof(Neuron *) * layers[i].size()), cudaMemcpyDeviceToHost);
+			//cout << "copy neurons " << cudaMemcpy(&neuronBuffer[0], &deviceNeurons[i][0], (sizeof(Neuron *) * layers[i].size()), cudaMemcpyDeviceToHost);
 			for (int j = 0; j < layers[i].size(); j++) {
 				layers[i][j] = *Neuron::copyFromGPU(neuronBuffer[j]);
 			} free(neuronBuffer);
@@ -226,12 +226,9 @@ vector<double> LSTMNetwork::train(vector<double> input, vector<double> target) {
 		MemoryBlock **blockBuffer = (MemoryBlock **)malloc(sizeof(MemoryBlock *) * blocks.size());
 		cout << blocks.size() << " copy blocks " << cudaMemcpy(blockBuffer, deviceBlocks, (sizeof(MemoryBlock *) * blocks.size()), cudaMemcpyDeviceToHost);
 
-		cout << "CB  " << blockBuffer[0] << endl;
-
 		for (int i = 0; i < blocks.size(); i++) {
 			MemoryBlock temp = *MemoryBlock::copyFromGPU(blockBuffer[i]);
 			blocks[i] = temp;
-			cout << "Test copy " << blocks[i].cells[0]->nConnections << endl;
 		}
 
 		cudaFree(deviceBlocks);

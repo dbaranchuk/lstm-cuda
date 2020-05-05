@@ -10,7 +10,6 @@
 long long int MemoryBlock::n = 0;
 
 MemoryBlock::MemoryBlock(int cl, int cn) {
-	// TODO Auto-generated constructor stub
 	nConnections = cn;
 	nCells = cl;
 	input = 0; inputPrime = 0;
@@ -53,7 +52,6 @@ MemoryBlock::MemoryBlock(int cl, int cn) {
 }
 
 MemoryBlock::~MemoryBlock() {
-	// TODO Auto-generated destructor stub
 }
 
 
