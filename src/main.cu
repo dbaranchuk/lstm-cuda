@@ -30,6 +30,11 @@ int main(int argc, char *argv[]) {
 		return -1;
 	}
 
+    networkStart = getMSec();
+    DatasetAdapter dataset = DatasetAdapter();
+    networkEnd = getMSec();
+    cout << "Language Dataset loaded in " << (networkEnd - networkStart) << "msecs" << endl;
+
 	int maxEpoch = 10;
 	int trainingSize = 256;
 	int emb_size = 64;
@@ -40,13 +45,6 @@ int main(int argc, char *argv[]) {
 	double mse = 0;
 	double learningRate = atof(argv[1]);
 	long long networkStart, networkEnd, sumTime = 0;
-
-	const int _day = getDate()->tm_mday;
-
-	networkStart = getMSec();
-	DatasetAdapter dataset = DatasetAdapter();
-	networkEnd = getMSec();
-	cout << "Language Dataset loaded in " << (networkEnd - networkStart) << "msecs" << endl;
 
 	LSTMNetwork network = LSTMNetwork(emb_size, blocks, cells,
 	                                  learningRate, num_classes);
