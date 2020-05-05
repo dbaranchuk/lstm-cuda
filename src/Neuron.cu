@@ -10,7 +10,6 @@
 long long Neuron::n = 0;
 
 Neuron::Neuron(int nConnections) {
-	// TODO Auto-generated constructor stub
 	activation = 0; activationPrime = 0;
 	connections = nConnections;
 	default_random_engine g(time(0) + (n++));
@@ -23,9 +22,7 @@ Neuron::Neuron(int nConnections) {
 	}
 }
 
-Neuron::~Neuron() {
-	// TODO Auto-generated destructor stub
-}
+Neuron::~Neuron() {}
 
 __device__ double Neuron::sigmoid(double input) {
 	return 1 / (1 + exp(-input));
@@ -47,9 +44,8 @@ __device__ double Neuron::forward(double *input) {
 	double sum = 0;
 	// find the weighted sum of all input
 	for (int i = 0; i < connections; i++) {
-		//cout << weight[i] << " ";
-		//sum += input[i] * weight[i];
-		sum += input[i];
+		sum += input[i] * weight[i];
+		//sum += input[i];
 		//sum += weight[i];
 	}// cout << " sum : " << sum << " weights : " << weight.size() << endl;
 	activation = activate(sum);

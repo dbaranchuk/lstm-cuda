@@ -59,14 +59,10 @@ __device__ double MemoryCell::activateOut(double data) {
 
 MemoryCell *MemoryCell::copyToGPU(MemoryCell *memory) {
 	MemoryCell *memoryCell;
-	//cout << "Test " << memory << endl;
 	cudaMalloc((void **)&memoryCell, (sizeof(MemoryCell)));
 	cudaDeviceSynchronize();
-	//cout << "Test" << endl;
 	cudaMemcpy(memoryCell, memory, sizeof(MemoryCell), cudaMemcpyHostToDevice);
 	cudaDeviceSynchronize();
-
-	//cout << "Test" << endl;
 
 	double *cdw, *idp, *fdp, *cdp;
 	cudaMalloc((void **)&cdw, (sizeof(double) * memory->nConnections));

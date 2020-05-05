@@ -257,7 +257,6 @@ MemoryBlock *MemoryBlock::copyFromGPU(MemoryBlock *memory) {
 	cudaMemcpy(memoryCells, memoryBlock->cells, (sizeof(MemoryCell *) * memoryBlock->nCells), cudaMemcpyDeviceToHost);
 
 	for (int i = 0; i < memoryBlock->nCells; i++) {
-		cout << memoryCells[i] << endl;
 		MemoryCell *buffer = MemoryCell::copyFromGPU(memoryCells[i]);
 		memoryCells[i] = buffer;
 	} memcpy(&(memoryBlock->cells), &memoryCells, sizeof(MemoryCell *));
