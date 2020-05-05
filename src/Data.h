@@ -4,7 +4,6 @@
 #include <vector>
 #include <cmath>
 #include <iostream>
-#include <random.h>
 
 using namespace std;
 
