@@ -33,6 +33,7 @@ int main(int argc, char *argv[]) {
 	std::srand(unsigned(std::time(0)));
 
     long long networkStart, networkEnd;
+    networkStart = getMSec();
 
 	int num_epochs = 10;
 	int num_batches = 256;
@@ -48,6 +49,7 @@ int main(int argc, char *argv[]) {
 	TextClassifier model = TextClassifier(emb_size, blocks, cells,
 	                                     learningRate, num_classes);
 	Data data = Data(emb_size, num_classes);
+	networkEnd = getMSec();
 	cout << "Network initialized in " << (networkEnd - networkStart) << "msecs" << endl;
 
 	for (int e = 0; e < num_epochs; e++) {
