@@ -148,10 +148,10 @@ double TextClassifier::train(vector<vector<double>> &inputs, vector<double> &tar
     }
     cout << inputs[0].size() << " " << block->nConnections;
     // TODO
-    for (int i = 0; i < inputs.size(); i++) {
-        cudaMemcpy(block->impulses[i].data(), &connections[i][0],
-                   (sizeof(double) * block->nConnections), cudaMemcpyDeviceToHost);
-    }
+    //for (int i = 0; i < inputs.size(); i++) {
+    //    cudaMemcpy(block->impulses[i].data(), &connections[i][0],
+    //               (sizeof(double) * block->nConnections), cudaMemcpyDeviceToHost);
+    //}
     MemoryBlock *device_block = MemoryBlock::copyToGPU(block);
     forwardPassLSTM << < maxBlocks, maxThreads >> > (device_block, connections, lstm_activations, inputs.size());
     cudaDeviceSynchronize();

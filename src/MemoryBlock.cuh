@@ -28,7 +28,7 @@ public:
 	MemoryCell **cells;
 	double *input_data_weight,
 		*forget_data_weight, *output_data_weight,
-		*bias, *impulse,
+		*bias, //**impulses,
 		*input_hidden_weight,
 		*forget_hidden_weight,
 		*output_hidden_weight;
