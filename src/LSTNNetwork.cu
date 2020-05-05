@@ -152,7 +152,7 @@ vector<double> LSTMNetwork::train(vector<double> input, vector<double> target) {
     cudaMalloc((void **)&connections, (sizeof(double) * blocks.size() * blocks[0].nCells));
     cudaMemcpy(&connections[0], &activations[0], (sizeof(double) * blocks.size() * blocks[0].nCells), cudaMemcpyDeviceToDevice);
     for (int i = 0; i < blocks.size(); i++)
-        cout << activations[i] << " ";
+        cout << connections[i] << " ";
     cudaFree(activations);
     free(output);
 
