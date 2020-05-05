@@ -151,13 +151,10 @@ vector<double> LSTMNetwork::train(vector<double> input, vector<double> target) {
     cudaFree(connections);
     cudaMalloc((void **)&connections, (sizeof(double) * blocks.size() * blocks[0].nCells));
     cudaMemcpy(&connections[0], &activations[0], (sizeof(double) * blocks.size() * blocks[0].nCells), cudaMemcpyDeviceToDevice);
+    for (int i = 0; i < blocks.size(); i++)
+        cout << activations[i] << " ";
     cudaFree(activations);
     free(output);
-
-    cout << blocks.size() * blocks[0].nCells;
-    //for (int i = 0; i < blocks.size(); i++)
-
-    //    cout << activations[i];
 
     output = (double *)malloc(sizeof(double) * layer.size());
 
