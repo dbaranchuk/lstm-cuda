@@ -226,7 +226,7 @@ MemoryBlock *MemoryBlock::copyFromGPU(MemoryBlock *memory) {
 	} memcpy(&(memoryBlock->cells), &memoryCells, sizeof(MemoryCell *));
 
 
-	double *ifw, *ffw, *ofw, *osw, *b;
+	double *ifw, *ffw, *ofw, *b;
 	ifw = (double *)malloc((sizeof(double) * memoryBlock->nCells));
 	ifw = (double *)malloc((sizeof(double) * memoryBlock->nCells));
 	ffw = (double *)malloc((sizeof(double) * memoryBlock->nCells));
