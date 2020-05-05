@@ -5,6 +5,7 @@
 #include "MemoryBlock.cuh"
 #include "Neuron.cuh"
 #include <cuda.h>
+#include <math.h>
 using namespace std;
 
 __global__ void forwardPass(Neuron **neurons, double *connections, double *activations, int size);
@@ -26,7 +27,7 @@ public:
     TextClassifier(int is, int c, double lr, int num_classes);
 	virtual ~TextClassifier();
 //	vector<double> classify(vector<double> input);
-	vector<double> train(vector<vector<double>> input, vector<double> target);
+	double train(vector<vector<double>> input, vector<double> target);
 };
 
 #endif /* LSTMNETWORK_H_ */

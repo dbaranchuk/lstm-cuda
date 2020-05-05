@@ -130,7 +130,7 @@ TextClassifier::~TextClassifier() {}
 //	} else return vector<double>();
 //}
 
-vector<double> TextClassifier::train(vector<vector<double>> &inputs, vector<double> &target) {
+double TextClassifier::train(vector<vector<double>> &inputs, vector<double> &target) {
 	if (input.size() != inputSize) {
 	    cout << "Target size mismatch" << endl;
 		return vector<double>();
@@ -188,9 +188,11 @@ vector<double> TextClassifier::train(vector<vector<double>> &inputs, vector<doub
     cudaFree(logits_activations);
 
     cout << logits_layer.size() << "\n";
+	double loss = 0.0;
     for (int i = 0; i < logits_layer.size(); i++)
-        cout << output[i] << " ";
-    
+        loss += output[i];
+
+    return loss
     ///////////////////////////////////////////////////////////////
 
     // start backward pass
@@ -248,7 +250,7 @@ vector<double> TextClassifier::train(vector<vector<double>> &inputs, vector<doub
 //    cudaFree(errorChunks);
 //    cudaFree(errorSum);
 
-    vector<double> result(&output[0], &output[layer.size()]);
-    free(output);
-    return result;
+//    vector<double> result(&output[0], &output[layer.size()]);
+//    free(output);
+//    return result;
 }
