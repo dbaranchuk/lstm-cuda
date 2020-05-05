@@ -126,7 +126,6 @@ __device__ double *MemoryBlock::backward(double *errorPrime, double learningRate
 			cells[i]->inputDataPartial[j] = cells[i]->inputDataPartial[j] * forget + cells[i]->activationIn * inputPrime * impulse[j];	// invalid read of size 8
 			forgetDataPartialSum[j] += cells[i]->forgetDataPartial[j] * eta[i];
 			inputDataPartialSum[j] += cells[i]->inputDataPartial[j] * eta[i];
-			cout << impulse[j];
 		}
 
 		cells[i]->cellFeedbackPartial = cells[i]->cellFeedbackPartial * forget + cells[i]->activationInPrime * input * cells[i]->previousFeedback;
