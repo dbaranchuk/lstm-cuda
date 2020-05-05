@@ -53,9 +53,9 @@ int main(int argc, char *argv[]) {
 		networkStart = getMSec();
 		double loss = 0.0;
 		for (int i = 0; i < num_batches; i++) {
+			cout << seq_len << " " <<  std::rand() % num_classes  << " " << endl;
 			vector<double> onehot_target = data.get_onehot_target(std::rand() % num_classes);
 			vector<vector<double>> embs = data.get_emb_sequence(seq_len);
-			cout << embs[0].size();
             loss += model.train(embs, onehot_target);
 		}
 		loss /= num_batches;
