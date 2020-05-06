@@ -17,9 +17,10 @@ __global__ void logits_forward_pass(Neuron **neurons, double *connections, doubl
     }
 }
 
-__global__ void lstm_forward_pass(MemoryBlock *block, double *connections, double *activations, int size) {
-
-    double cellSum[block->nCells];
+__global__ void lstm_forward_pass(MemoryBlock *block, double *connections, double *activations, int size)
+{
+    const int nCells = block->nCells;
+    double cellSum[nCells];
     double inputSum = block->bias[0];
     double forgetSum = block->bias[1];
     double outputSum = block->bias[2];
@@ -188,7 +189,6 @@ double TextClassifier::train(vector<double> &inputs, vector<double> &target) {
     //               (sizeof(double) * block->nConnections), cudaMemcpyDeviceToHost);
     //}
     MemoryBlock *device_block = MemoryBlock::copyToGPU(block);
-    double *local_activations;
     for (int i = 0; i < 20; i++) {
         lstm_forward_pass<<< maxBlocks, maxThreads >>>(device_block, connections + device_block->nConnections * i,
                                                        lstm_activations, device_block->nConnections);
@@ -219,7 +219,7 @@ double TextClassifier::train(vector<double> &inputs, vector<double> &target) {
     }
 
     // Logits forward
-    forwardPass << < maxBlocks, maxThreads >> > (layerNeurons, lstm_activations,
+    logits_forward_pass <<< maxBlocks, maxThreads >>> (layerNeurons, lstm_activations,
             logits_activations, logits_layer.size());
     cudaDeviceSynchronize();
     cudaFree(lstm_activations);
