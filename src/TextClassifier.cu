@@ -20,7 +20,7 @@ __global__ void logits_forward_pass(Neuron **neurons, double *connections, doubl
 __global__ void lstm_forward_pass(MemoryBlock *block, double *connections, double *activations, int size)
 {
     //const int nCells = block->nCells;
-    double cellSum = [10]; //TODO
+    double cellSum[10]; //TODO
     double inputSum = block->bias[0];
     double forgetSum = block->bias[1];
     double outputSum = block->bias[2];
