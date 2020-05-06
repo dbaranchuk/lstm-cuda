@@ -19,36 +19,36 @@ __global__ void logits_forward_pass(Neuron **neurons, double *connections, doubl
 
 __global__ void lstm_forward_pass(MemoryBlock *block, double *connections, double *activations, int size)
 {
-//    double cellSum[10]; //TODO
-//    double inputSum = block->bias[0];
-//    double forgetSum = block->bias[1];
-//    double outputSum = block->bias[2];
+    double cellSum[10]; //TODO
+    double inputSum = block->bias[0];
+    double forgetSum = block->bias[1];
+    double outputSum = block->bias[2];
 
     int idx = blockIdx.x * blockDim.x + threadIdx.x;
 
-//    if (idx < block->nConnections) {
-//        for (int j = 0; j < block->nCells; j++) {
-//            cellSum[j] += connections[idx] * block->cells[j]->cell_data_weight[idx];
-//        }
-//        inputSum += connections[idx] * block->input_data_weight[idx];
-//        forgetSum += connections[idx] * block->forget_data_weight[idx];
-//        outputSum += connections[idx] * block->output_data_weight[idx];
-//    }
-//
-//    if (idx < block->nCells) {
-//        inputSum += block->input_hidden_weight[idx] * block->cells[idx]->feedback;
-//        forgetSum += block->forget_hidden_weight[idx] * block->cells[idx]->feedback;
-//        outputSum += block->output_hidden_weight[idx] * block->cells[idx]->feedback;
-//
-//        block->cells[idx]->previousState = block->cells[idx]->state;
-//        block->cells[idx]->state *= block->forgetGate(forgetSum);
-//        block->cells[idx]->state += block->cells[idx]->activateIn(cellSum[idx]) * block->inputGate(inputSum);
-//
-//        // compute output of memory cell
-//        block->cells[idx]->previousFeedback = block->cells[idx]->feedback;
-//        block->cells[idx]->feedback = block->cells[idx]->activateOut(block->cells[idx]->state) * block->outputGate(outputSum);
-//        activations[idx] = block->cells[idx]->feedback;
-//    }
+    if (idx < block->nConnections) {
+        for (int j = 0; j < block->nCells; j++) {
+            cellSum[j] += connections[idx] * block->cells[j]->cell_data_weight[idx];
+        }
+        inputSum += connections[idx] * block->input_data_weight[idx];
+        forgetSum += connections[idx] * block->forget_data_weight[idx];
+        outputSum += connections[idx] * block->output_data_weight[idx];
+    }
+
+    if (idx < block->nCells) {
+        inputSum += block->input_hidden_weight[idx] * block->cells[idx]->feedback;
+        forgetSum += block->forget_hidden_weight[idx] * block->cells[idx]->feedback;
+        outputSum += block->output_hidden_weight[idx] * block->cells[idx]->feedback;
+
+        block->cells[idx]->previousState = block->cells[idx]->state;
+        block->cells[idx]->state *= block->forgetGate(forgetSum);
+        block->cells[idx]->state += block->cells[idx]->activateIn(cellSum[idx]) * block->inputGate(inputSum);
+
+        // compute output of memory cell
+        block->cells[idx]->previousFeedback = block->cells[idx]->feedback;
+        block->cells[idx]->feedback = block->cells[idx]->activateOut(block->cells[idx]->state) * block->outputGate(outputSum);
+        activations[idx] = block->cells[idx]->feedback;
+    }
 }
 
 
@@ -188,15 +188,14 @@ double TextClassifier::train(vector<double> &inputs, vector<double> &target) {
     //}
     MemoryBlock *device_block = MemoryBlock::copyToGPU(block);
     for (int i = 0; i < 20; i++) {
-        double *local_connections;
-        cudaMalloc((void **) &local_connections, sizeof(double) * block->nConnections);
-        cudaMemcpy(local_connections, inputs.data() + block->nConnections * i,
-                   sizeof(double) * block->nConnections, cudaMemcpyHostToDevice);
-        cout << block->nCells << " " << block->nConnections << endl;
-        lstm_forward_pass<<< maxBlocks, maxThreads >>>(device_block, local_connections,// + block->nConnections * i,
+//        double *local_connections;
+//        cudaMalloc((void **) &local_connections, sizeof(double) * block->nConnections);
+//        cudaMemcpy(local_connections, inputs.data() + block->nConnections * i,
+//                   sizeof(double) * block->nConnections, cudaMemcpyHostToDevice);
+//        cout << block->nCells << " " << block->nConnections << endl;
+        lstm_forward_pass<<< maxBlocks, maxThreads >>>(device_block, connections + block->nConnections * i,
                                                        lstm_activations, block->nConnections);
-        cout << local_connections << endl;
-        cudaFree(local_connections);
+//        cudaFree(local_connections);
     }
 
 //    forwardPassLSTM << < maxBlocks, maxThreads >> > (device_block, connections, lstm_activations, inputs.size());
