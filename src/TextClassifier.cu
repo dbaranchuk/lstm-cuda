@@ -9,7 +9,7 @@ __global__ void logits_forward_pass(Neuron **neurons, double *connections, doubl
     }
 }
 
-__global__ void lstm_forward_pass(MemoryBlock *block, double *connections, double *activations, int size)
+__global__ void lstm_forward_pass(LSTMCell *block, double *connections, double *activations, int size)
 {
     double cellSum[100]; //TODO
     double inputSum = block->bias[0];
@@ -56,7 +56,7 @@ __global__ void lstm_forward_pass(MemoryBlock *block, double *connections, doubl
 //	}
 //}
 
-//__global__ void forwardPassLSTM(MemoryBlock **blocks, double *connections, double *activations, int size, int cycles) {
+//__global__ void forwardPassLSTM(LSTMCell **blocks, double *connections, double *activations, int size, int cycles) {
 //	int maxId = gridDim.x * blockDim.x;
 //	for (int i = 0; i < (cycles); i++) {
 //		int idx = (threadIdx.x + blockIdx.x * blockDim.x) + (maxId * i);
@@ -68,7 +68,7 @@ __global__ void lstm_forward_pass(MemoryBlock *block, double *connections, doubl
 //}
 
 
-//__global__ void backwardPassLSTM(MemoryBlock **blocks, double **weightedError, double *errorSum, double learningRate, int connections, int size, int cycles) {
+//__global__ void backwardPassLSTM(LSTMCell **blocks, double **weightedError, double *errorSum, double learningRate, int connections, int size, int cycles) {
 //	int maxId = gridDim.x * blockDim.x;
 //	for (int i = 0; i < (cycles); i++) {
 //		int idx = (threadIdx.x + blockIdx.x * blockDim.x) + (maxId * i);
@@ -81,10 +81,10 @@ __global__ void lstm_forward_pass(MemoryBlock *block, double *connections, doubl
 //	}
 //}
 
-TextClassifier::TextClassifier(int is, int c, double lr, int num_classes) {
-	inputSize = is;
+TextClassifier::TextClassifier(int input_size, int hidden_size, double lr, int num_classes) {
+	inputSize = input_size;
 	learningRate = lr;
-	block = new MemoryBlock(c, is);
+	block = new LSTMCell(hidden_size, input_size);
 
 	for (int i = 0; i < num_classes; i++)
         logits_layer.push_back(Neuron(c));
@@ -101,21 +101,21 @@ TextClassifier::~TextClassifier() {}
 //		double *activations;
 //		cudaMalloc((void **)&activations, (sizeof(double) * blocks.size() * blocks[0].nCells));
 //
-//		MemoryBlock **deviceBlocks, **blockBuffer = (MemoryBlock **)malloc(sizeof(MemoryBlock *) * blocks.size());
+//		LSTMCell **deviceBlocks, **blockBuffer = (LSTMCell **)malloc(sizeof(LSTMCell *) * blocks.size());
 //		for (int i = 0; i < blocks.size(); i++) {
 //			cudaMemcpy(&(blocks[i].impulse[0]), &connections[0], (sizeof(double) * blocks[i].nConnections), cudaMemcpyDeviceToHost);
 //		}
-//		cudaMalloc((void **)&deviceBlocks, sizeof(MemoryBlock *) * blocks.size());
+//		cudaMalloc((void **)&deviceBlocks, sizeof(LSTMCell *) * blocks.size());
 //		for (int i = 0; i < blocks.size(); i++) {
-//			MemoryBlock *db = MemoryBlock::copyToGPU(&blocks[i]);
-//			cudaMemcpy(&deviceBlocks[i], &db, sizeof(MemoryBlock *), cudaMemcpyHostToDevice);
+//			LSTMCell *db = LSTMCell::copyToGPU(&blocks[i]);
+//			cudaMemcpy(&deviceBlocks[i], &db, sizeof(LSTMCell *), cudaMemcpyHostToDevice);
 //		} forwardPassLSTM<<<maxBlocks, maxThreads>>>(deviceBlocks, connections, activations, blocks.size(),
 //		                                             ceil((double)blocks.size() / (double)(maxBlocks * maxThreads)));
 //		cudaDeviceSynchronize();
 //
-//		cudaMemcpy(&blockBuffer[0], &deviceBlocks[0], (sizeof(MemoryBlock *) * blocks.size()), cudaMemcpyDeviceToHost);
+//		cudaMemcpy(&blockBuffer[0], &deviceBlocks[0], (sizeof(LSTMCell *) * blocks.size()), cudaMemcpyDeviceToHost);
 //		for (int i = 0; i < blocks.size(); i++) {
-//			blocks[i] = *MemoryBlock::copyFromGPU(blockBuffer[i]);
+//			blocks[i] = *LSTMCell::copyFromGPU(blockBuffer[i]);
 //		} free(blockBuffer);
 //		cudaFree(deviceBlocks);
 //
@@ -170,7 +170,7 @@ double TextClassifier::train(vector<double> &inputs, vector<double> &target) {
     //    cudaMemcpy(block->impulses[i].data(), &connections[i][0],
     //               (sizeof(double) * block->nConnections), cudaMemcpyDeviceToHost);
     //}
-    MemoryBlock *device_block = MemoryBlock::copyToGPU(block);
+    LSTMCell *device_block = LSTMCell::copyToGPU(block);
     for (int i = 0; i < 100; i++) {
         lstm_forward_pass<<< maxBlocks, maxThreads >>>(device_block, connections + block->nConnections * i,
                                                        lstm_activations, block->nConnections);
@@ -257,12 +257,12 @@ double TextClassifier::train(vector<double> &inputs, vector<double> &target) {
 //    } backwardPassLSTM<<<maxBlocks, maxThreads>>>(deviceBlocks, errorChunks, errorSum, learningRate, blocks[0].nConnections, blocks.size(), ceil((double)blocks.size() / (double)(maxBlocks * maxThreads)));
 //    cudaDeviceSynchronize();
 //
-//    MemoryBlock **blockBuffer = (MemoryBlock **)malloc(sizeof(MemoryBlock *) * blocks.size());
+//    LSTMCell **blockBuffer = (LSTMCell **)malloc(sizeof(LSTMCell *) * blocks.size());
 //    //cout << blocks.size() << " copy blocks " <<
-//    cudaMemcpy(blockBuffer, deviceBlocks, (sizeof(MemoryBlock *) * blocks.size()), cudaMemcpyDeviceToHost);
+//    cudaMemcpy(blockBuffer, deviceBlocks, (sizeof(LSTMCell *) * blocks.size()), cudaMemcpyDeviceToHost);
 //
 //    for (int i = 0; i < blocks.size(); i++) {
-//        MemoryBlock temp = *MemoryBlock::copyFromGPU(blockBuffer[i]);
+//        LSTMCell temp = *LSTMCell::copyFromGPU(blockBuffer[i]);
 //        blocks[i] = temp;
 //    }
 //

@@ -2,8 +2,8 @@
 
 long long int LSTMCell::n = 0;
 
-LSTMCell::LSTMCell(int output_size, int hidden_size) {
-	nConnections = hidden_size;
+LSTMCell::LSTMCell(int output_size, int input_size) {
+	nConnections = input_size;
 	nCells = output_size;
 	input = 0; inputPrime = 0;
 	forget = 0; forgetPrime = 0;
