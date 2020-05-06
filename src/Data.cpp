@@ -25,15 +25,13 @@ vector<double> Data::get_onehot_target(int class_id) {
 }
 
 
-vector<vector<double>> Data::get_emb_sequence(int seq_len) {
+vector<double> Data::get_emb_sequence(int seq_len) {
 	default_random_engine g(time(0) + (n++));
 	normal_distribution<double> d(0, 1);
-	vector<vector<double>> sequence(seq_len);
+	vector<double> sequence(seq_len * emb_size);
 	for (int i = 0; i < seq_len; i++) {
-		vector<double> emb(emb_size);
 		for (int j = 0; j < emb_size; j++)
-			emb[j] = d(g);
-		sequence[i] = emb;
+			sequence[i*emb_size + j] = d(g);
 	}
 	return sequence;
 }
