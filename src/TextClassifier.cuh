@@ -17,8 +17,8 @@ __global__ void lstm_forward_pass(MemoryBlock *block, double *connections, doubl
 
 class TextClassifier {
 private:
-	const int maxBlocks = 1;
-	const int maxThreads = 128;
+	const int maxBlocks = 4;
+	const int maxThreads = 32;
 	unsigned int inputSize;
 	double learningRate;
 	MemoryBlock *block;
