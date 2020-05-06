@@ -225,8 +225,6 @@ double TextClassifier::train(vector<double> &inputs, vector<double> &target) {
                sizeof(double) * logits_layer.size(), cudaMemcpyDeviceToHost);
 
     cudaFree(logits_activations);
-
-    cout << logits_layer.size() << "\n";
     double loss = 0.0;
     for (int i = 0; i < logits_layer.size(); i++)
         loss += output[i];
