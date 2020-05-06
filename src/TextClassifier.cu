@@ -1,13 +1,5 @@
 #include "TextClassifier.cuh"
 
-//__global__ void forwardPass(Neuron **neurons, double *connections, double *activations, int size) {
-//	//int maxId = gridDim.x * blockDim.x;
-//	//int idx = (threadIdx.x + blockIdx.x * blockDim.x) + (maxId * i);
-//	//if (idx < size) {
-//	for (int i = 0; i < size; i++)
-//		activations[i] = neurons[i]->forward(connections);
-//	//}
-//}
 
 __global__ void logits_forward_pass(Neuron **neurons, double *connections, double *activations, int size) {
     //int maxId = gridDim.x * blockDim.x;
@@ -75,14 +67,6 @@ __global__ void lstm_forward_pass(MemoryBlock *block, double *connections, doubl
 //	}
 //}
 
-//__global__ void forwardPassLSTM(MemoryBlock *block, double *connections, double *activations, int cycles) {
-//    double *local_activations;
-//    for (int i = 0; i < cycles; i++) {
-//		local_activations = block->forward(connections + block->nConnections * i);
-//	}
-//    for (int i = 0; i < block->nCells; i++)
-//        activations[i] = local_activations[i];
-//}
 
 //__global__ void backwardPassLSTM(MemoryBlock **blocks, double **weightedError, double *errorSum, double learningRate, int connections, int size, int cycles) {
 //	int maxId = gridDim.x * blockDim.x;

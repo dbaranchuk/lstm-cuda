@@ -1,10 +1,3 @@
-/*
- * MemoryBlock.h
- *
- *  Created on: Jul 18, 2016
- *      Author: trabucco
- */
-
 #ifndef MEMORYBLOCK_H_
 #define MEMORYBLOCK_H_
 
