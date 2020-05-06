@@ -143,9 +143,9 @@ double TextClassifier::train(vector<vector<double>> &inputs, vector<double> &tar
     cudaMalloc((void **) &lstm_activations, sizeof(double) * block->nCells);
 
     for (int i = 0; i < inputs.size(); i++) {
-        //cout << &connections[i][0] << " HUI " << connections[i] << endl;
-        cudaMalloc((void **) &connections[i][0], sizeof(double) * inputs[i].size());
-        cudaMemcpy(&connections[i][0], inputs[i].data(),
+        cout << &connections[i] << " HUI " << connections[i] << endl;
+        cudaMalloc((void **) &connections[i], sizeof(double) * inputs[i].size());
+        cudaMemcpy(&connections[i], inputs[i].data(),
                    sizeof(double) * inputs[i].size(), cudaMemcpyHostToDevice);
     }
     cout << inputs[0].size() << " " << block->nConnections;
