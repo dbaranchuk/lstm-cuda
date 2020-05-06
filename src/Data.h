@@ -20,7 +20,6 @@ public:
 
 	vector<double> get_onehot_target(int class_idx);
 	vector<double> get_emb_sequence(int seq_len);
-	//int getTargetFromOutput(vector<double> output);
 };
 
 #endif /* DATA_H_ */

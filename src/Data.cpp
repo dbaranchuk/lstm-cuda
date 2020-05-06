@@ -36,17 +36,3 @@ vector<double> Data::get_emb_sequence(int seq_len) {
 	return sequence;
 }
 
-//int OutputTarget::getTargetFromOutput(vector<double> output) {
-//	for (int i = 0; i < classes; i++) {
-//		bool matches = true;
-//		for (int j = 0; j < nodes; j++) {
-//			if (abs(output[j] - classifiers[i][j]) >= 1) {
-//				matches = false;
-//				break;
-//			}
-//		}
-//		if (matches) return i;
-//	}
-//	return -1;
-//}
-

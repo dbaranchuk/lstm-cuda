@@ -13,10 +13,10 @@ LSTMCell::LSTMCell(int output_size, int input_size) {
 	normal_distribution<double> d(0, 1);
 
 	bias = (double *)calloc(3, sizeof(double));
-	cells = (MemoryCell **)malloc(sizeof(MemoryCell *) * nCells);
-	input_hidden_weight = (double *)malloc(sizeof(double) * nCells);
-	forget_hidden_weight = (double *)malloc(sizeof(double) * nCells);
-	output_hidden_weight = (double *)malloc(sizeof(double) * nCells);
+	cells = (MemoryCell **)malloc(sizeof(MemoryCell *) * output_size);
+	input_hidden_weight = (double *)malloc(sizeof(double) * output_size);
+	forget_hidden_weight = (double *)malloc(sizeof(double) * output_size);
+	output_hidden_weight = (double *)malloc(sizeof(double) * output_size);
 
 	for (int i = 0; i < nCells; i++) {
 		cells[i] = (new MemoryCell(output_size));
@@ -68,101 +68,6 @@ __device__ double LSTMCell::outputGate(double data) {
 	return output;
 }
 
-__device__ double *LSTMCell::forward(double *input) {
-	double *cellSum = new double[nCells] {0};
-	double inputSum = bias[0];
-	double forgetSum = bias[1];
-	double outputSum = bias[2];
-
-	for (int i = 0; i < nCells; i++) {
-		inputSum += input_hidden_weight[i] * cells[i]->feedback;
-		forgetSum += forget_hidden_weight[i] * cells[i]->feedback;
-		outputSum += output_hidden_weight[i] * cells[i]->feedback;
-	}
-
-	// find the weighted sum of all input
-	for (int i = 0; i < nConnections; i++) {
-		for (unsigned int j = 0; j < nCells; j++) {
-			cellSum[j] += input[i] * cells[j]->cell_data_weight[i];
-		}
-		inputSum += input[i] * input_data_weight[i];
-		forgetSum += input[i] * forget_data_weight[i];
-		outputSum += input[i] * output_data_weight[i];
-	}
-
-	// compute input into memory
-	double *output = new double[nCells];	// potential error
-	for (int i = 0; i < nCells; i++) {
-		cells[i]->previousState = cells[i]->state;
-		cells[i]->state *= forgetGate(forgetSum);
-		cells[i]->state += cells[i]->activateIn(cellSum[i]) * inputGate(inputSum);
-
-		// compute output of memory cell
-		cells[i]->previousFeedback = cells[i]->feedback;
-		cells[i]->feedback = cells[i]->activateOut(cells[i]->state) * outputGate(outputSum);
-		output[i] = cells[i]->feedback;
-	}
-
-	return output;
-}
-
-// errorprime must be a vector with length of number of cells
-//__device__ double *LSTMCell::backward(double *errorPrime, double learningRate) {
-//	double *eta = new double[nCells],
-//			*inputDataPartialSum = new double[nConnections] {0},
-//			*forgetDataPartialSum = new double[nConnections] {0};
-//	double blockSum = 0,
-//			inputFeedbackPartialSum = 0,
-//			forgetFeedbackPartialSum = 0;
-//
-//	for (int i = 0; i < nCells; i++) {
-//		blockSum += cells[i]->activationOut * errorPrime[i];
-//		eta[i] = (output * cells[i]->activationOutPrime * errorPrime[i]);
-//		output_hidden_weight[i] -= learningRate * blockSum * outputPrime * cells[i]->feedback;
-//	}
-//
-//	for (int i = 0; i < nConnections; i++) {
-//		output_data_weight[i] -= learningRate * blockSum * outputPrime * impulse[i];	// invalid read of size 8
-//	}
-//
-//	// calculate the updates, and update the cell weights
-//	for (int i = 0; i < nCells; i++) {
-//		for (int j = 0; j < nConnections; j++) {
-//			cells[i]->cellDataPartial[j] = cells[i]->cellDataPartial[j] * forget + cells[i]->activationInPrime * input * impulse[j];
-//			cells[i]->cell_data_weight[j] -= learningRate * eta[i] * cells[i]->cellDataPartial[j];
-//			cells[i]->forgetDataPartial[j] = cells[i]->forgetDataPartial[j] * forget + cells[i]->previousState * forgetPrime * impulse[j];	// invalid read of size 8
-//			cells[i]->inputDataPartial[j] = cells[i]->inputDataPartial[j] * forget + cells[i]->activationIn * inputPrime * impulse[j];	// invalid read of size 8
-//			forgetDataPartialSum[j] += cells[i]->forgetDataPartial[j] * eta[i];
-//			inputDataPartialSum[j] += cells[i]->inputDataPartial[j] * eta[i];
-//		}
-//
-//		cells[i]->cellFeedbackPartial = cells[i]->cellFeedbackPartial * forget + cells[i]->activationInPrime * input * cells[i]->previousFeedback;
-//		cells[i]->cell_hidden_weight -= learningRate * eta[i] * cells[i]->cellFeedbackPartial;
-//
-//		cells[i]->forgetFeedbackPartial = cells[i]->forgetFeedbackPartial * forget + cells[i]->previousState * forgetPrime * cells[i]->previousFeedback;
-//		forgetFeedbackPartialSum += eta[i] *cells[i]->forgetFeedbackPartial;
-//
-//		cells[i]->inputFeedbackPartial = cells[i]->inputFeedbackPartial * forget + cells[i]->activationIn * inputPrime * cells[i]->previousFeedback;
-//		inputFeedbackPartialSum += eta[i] *cells[i]->inputFeedbackPartial;
-//	}
-//
-//	// update the input, output, and forget weights
-//	for (int i = 0; i < nCells; i++) {
-//		for (int j = 0; j < nConnections; j++) {
-//			forget_data_weight[j] -= learningRate * forgetDataPartialSum[j];	// invalid read of size 8
-//			input_data_weight[j] -= learningRate * inputDataPartialSum[j];	// invalid read of size 8
-//		}
-//		input_hidden_weight[i] -= learningRate * inputFeedbackPartialSum;
-//		forget_hidden_weight[i] -= learningRate * forgetFeedbackPartialSum;
-//	}
-//
-//	double *temp = new double[nConnections];	// potential error
-//	for (int i = 0; i < nConnections; i++) {
-//		temp[i] = (0.0);
-//	}
-//
-//	return temp;
-//}
 
 LSTMCell *LSTMCell::copyToGPU(LSTMCell *memory) {
 	LSTMCell *memoryBlock;

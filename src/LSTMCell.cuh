@@ -35,8 +35,6 @@ public:
 
 	LSTMCell(int output_size, int hidden_size);
 	virtual ~LSTMCell();
-	__device__ double *forward(double *input);
-//	__device__ double *backward(double *errorPrime, double learningRate);
 	static LSTMCell *copyToGPU(LSTMCell *memory);
 	static LSTMCell *copyFromGPU(LSTMCell *memory);
 };

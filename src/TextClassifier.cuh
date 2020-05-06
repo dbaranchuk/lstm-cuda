@@ -10,9 +10,7 @@
 using namespace std;
 
 __global__ void logits_forward_pass(Neuron **neurons, double *connections, double *activations, int size);
-//__global__ void backwardPass(Neuron **neurons, double *weightedError, double *errorSum, double learningRate, int connections);
 __global__ void lstm_forward_pass(LSTMCell *block, double *connections, double **activations, int size);
-//__global__ void backwardPassLSTM(MemoryBlock *block, double **weightedError, double *errorSum, double learningRate, int connections, int cycles);
 
 
 class TextClassifier {
@@ -26,7 +24,6 @@ private:
 public:
     TextClassifier(int is, int c, double lr, int num_classes);
 	virtual ~TextClassifier();
-//	vector<double> classify(vector<double> input);
 	double train(vector<double> &input, vector<double> &target);
 };
 
