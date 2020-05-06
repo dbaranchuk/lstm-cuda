@@ -27,30 +27,29 @@ __global__ void lstm_forward_pass(MemoryBlock *block, double *connections, doubl
 
     int idx = blockIdx.x * blockDim.x + threadIdx.x;
 
-    if (idx < block->nConnections) {
-        for (int j = 0; j < block->nCells; j++) {
-            cellSum[j] += connections[idx] * block->cells[j]->cell_data_weight[idx];
-        }
-        inputSum += connections[idx] * block->input_data_weight[idx];
-        forgetSum += connections[idx] * block->forget_data_weight[idx];
-        outputSum += connections[idx] * block->output_data_weight[idx];
-    }
-
-    if (idx < block->nCells) {
-        inputSum += block->input_hidden_weight[idx] * block->cells[idx]->feedback;
-        forgetSum += block->forget_hidden_weight[idx] * block->cells[idx]->feedback;
-        outputSum += block->output_hidden_weight[idx] * block->cells[idx]->feedback;
-
-        block->cells[idx]->previousState = block->cells[idx]->state;
-        block->cells[idx]->state *= block->forgetGate(forgetSum);
-        block->cells[idx]->state += block->cells[idx]->activateIn(cellSum[idx]) * block->inputGate(inputSum);
-
-        // compute output of memory cell
-        block->cells[idx]->previousFeedback = block->cells[idx]->feedback;
-        block->cells[idx]->feedback = block->cells[idx]->activateOut(block->cells[idx]->state) * block->outputGate(outputSum);
-        activations[idx] = block->cells[idx]->feedback;
-
-    }
+//    if (idx < block->nConnections) {
+//        for (int j = 0; j < block->nCells; j++) {
+//            cellSum[j] += connections[idx] * block->cells[j]->cell_data_weight[idx];
+//        }
+//        inputSum += connections[idx] * block->input_data_weight[idx];
+//        forgetSum += connections[idx] * block->forget_data_weight[idx];
+//        outputSum += connections[idx] * block->output_data_weight[idx];
+//    }
+//
+//    if (idx < block->nCells) {
+//        inputSum += block->input_hidden_weight[idx] * block->cells[idx]->feedback;
+//        forgetSum += block->forget_hidden_weight[idx] * block->cells[idx]->feedback;
+//        outputSum += block->output_hidden_weight[idx] * block->cells[idx]->feedback;
+//
+//        block->cells[idx]->previousState = block->cells[idx]->state;
+//        block->cells[idx]->state *= block->forgetGate(forgetSum);
+//        block->cells[idx]->state += block->cells[idx]->activateIn(cellSum[idx]) * block->inputGate(inputSum);
+//
+//        // compute output of memory cell
+//        block->cells[idx]->previousFeedback = block->cells[idx]->feedback;
+//        block->cells[idx]->feedback = block->cells[idx]->activateOut(block->cells[idx]->state) * block->outputGate(outputSum);
+//        activations[idx] = block->cells[idx]->feedback;
+//    }
 }
 
 
