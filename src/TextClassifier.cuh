@@ -21,9 +21,8 @@ private:
 	const int maxThreads = 1;
 	unsigned int inputSize;
 	double learningRate;
-	MemoryBlock *block;
+	LSTMCell *block;
 	vector<Neuron> logits_layer;
-//	vector<double> timeSteps;
 public:
     TextClassifier(int is, int c, double lr, int num_classes);
 	virtual ~TextClassifier();
