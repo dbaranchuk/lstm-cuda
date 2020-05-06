@@ -35,7 +35,7 @@ __global__ void forwardPass(Neuron **neurons, double *connections, double *activ
 __global__ void forwardPassLSTM(MemoryBlock *block, double *connections, double *activations, int cycles) {
     double *local_activations;
     for (int i = 0; i < cycles; i++) {
-		local_activations = block->forward(connections[block->nConnections * i]);
+		local_activations = block->forward(connections + block->nConnections * i);
 	}
     for (int i = 0; i < block->nCells; i++)
         activations[i] = local_activations[i];
@@ -132,10 +132,6 @@ TextClassifier::~TextClassifier() {}
 //}
 
 double TextClassifier::train(vector<double> &inputs, vector<double> &target) {
-    if (inputs[0].size() != inputSize) {
-        cout << "Target size mismatch" << endl;
-        return 0.0;
-    }
     // Load input data to GPU
     double *connections, *lstm_activations;
     cudaMalloc((void **) &connections, sizeof(double) * inputs.size());
@@ -143,7 +139,7 @@ double TextClassifier::train(vector<double> &inputs, vector<double> &target) {
     cudaMemcpy(connections, inputs.data(),
                sizeof(double) * inputs.size(), cudaMemcpyHostToDevice);
     cout << connections << " " << &connections[0];
-    cout << inputs[0].size() << " " << block->nConnections << endl;
+    cout << inputs.size() << " " << block->nConnections << endl;
     // TODO
     //for (int i = 0; i < inputs.size(); i++) {
     //    cudaMemcpy(block->impulses[i].data(), &connections[i][0],
