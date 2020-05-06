@@ -42,6 +42,14 @@ MemoryBlock::~MemoryBlock() {
 }
 
 
+__device__ double MemoryBlock::sigmoid(double input) {
+	return 1 / (1 + exp(-input));
+}
+
+__device__ double MemoryBlock::sigmoidPrime(double input) {
+	return sigmoid(input) * (1 - sigmoid(input));
+}
+
 __device__ double MemoryBlock::inputGate(double data) {
 	input = sigmoid(data);
 	inputPrime = sigmoidPrime(data);

@@ -8,7 +8,6 @@
 #ifndef MEMORYBLOCK_H_
 #define MEMORYBLOCK_H_
 
-#include "BaseNode.cuh"
 #include "MemoryCell.cuh"
 #include <math.h>
 #include <time.h>
@@ -22,6 +21,8 @@ using namespace std;
 class MemoryBlock : public BaseNode {
 private:
 	static long long n;
+	__device__ double sigmoid(double input);
+	__device__ double sigmoidPrime(double input);
 public:
 	int nConnections;
 	int nCells;

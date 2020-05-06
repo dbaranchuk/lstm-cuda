@@ -33,15 +33,16 @@ MemoryCell::MemoryCell(int c) {
 
 MemoryCell::~MemoryCell() {}
 
+
 __device__ double MemoryCell::activateIn(double data) {
-	activationIn = activationFunction(data);
-	activationInPrime = activationFunctionPrime(data);
+	activationIn = tanh(data);
+	activationInPrime = (1 - (tanh(data) * tanh(data)));
 	return activationIn;
 }
 
 __device__ double MemoryCell::activateOut(double data) {
-	activationOut = activationFunction(data);
-	activationOutPrime = activationFunctionPrime(data);
+	activationOut = tanh(data);
+	activationOutPrime = (1 - (tanh(data) * tanh(data)));
 	return activationOut;
 }
 

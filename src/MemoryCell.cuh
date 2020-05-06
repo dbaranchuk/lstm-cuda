@@ -1,7 +1,6 @@
 #ifndef MEMORYCELL_H_
 #define MEMORYCELL_H_
 
-#include "BaseNode.cuh"
 #include <vector>
 #include <math.h>
 #include <time.h>
@@ -10,9 +9,10 @@
 #include <string.h>
 #include <cuda.h>
 #include <random>
+
 using namespace std;
 
-class MemoryCell : BaseNode {
+class MemoryCell{
 private:
 	static long long n;
 public:
