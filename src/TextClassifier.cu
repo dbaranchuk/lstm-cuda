@@ -190,10 +190,13 @@ double TextClassifier::train(vector<double> &inputs, vector<double> &target) {
     //}
     MemoryBlock *device_block = MemoryBlock::copyToGPU(block);
     for (int i = 0; i < 20; i++) {
-//        double *local_connections;
-//        cudaMalloc((void **) &local_connections, sizeof(double) * inputs.size());
-        lstm_forward_pass<<< maxBlocks, maxThreads >>>(device_block, connections + block->nConnections * i,
+        double *local_connections;
+        cudaMalloc((void **) &local_connections, sizeof(double) * block->nConnections);
+        cudaMemcpy(local_connections, inputs.data() + block->nConnections * i,
+                   sizeof(double) * block->nConnections, cudaMemcpyHostToDevice);
+        lstm_forward_pass<<< maxBlocks, maxThreads >>>(device_block, local_connections,// + block->nConnections * i,
                                                        lstm_activations, device_block->nConnections);
+        cudaFree(local_connections);
     }
 
 //    forwardPassLSTM << < maxBlocks, maxThreads >> > (device_block, connections, lstm_activations, inputs.size());
