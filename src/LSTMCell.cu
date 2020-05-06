@@ -19,7 +19,7 @@ LSTMCell::LSTMCell(int output_size, int input_size) {
 	output_hidden_weight = (double *)malloc(sizeof(double) * nCells);
 
 	for (int i = 0; i < nCells; i++) {
-		cells[i] = (new MemoryCell(hidden_size));
+		cells[i] = (new MemoryCell(output_size));
 		input_hidden_weight[i] = d(g);
 		forget_hidden_weight[i] = d(g);
 		output_hidden_weight[i] = d(g);
