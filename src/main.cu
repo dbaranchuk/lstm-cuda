@@ -36,7 +36,7 @@ int main(int argc, char *argv[]) {
     networkStart = getMSec();
 
 	int num_epochs = 10;
-	int num_batches = 256;
+	int num_batches = 10;
 	int emb_size = 128;
 	int num_classes = 10;
 	int cells = atoi(argv[2]);

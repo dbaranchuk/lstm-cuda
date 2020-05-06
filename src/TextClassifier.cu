@@ -1,12 +1,20 @@
 #include "TextClassifier.cuh"
 
+//__global__ void forwardPass(Neuron **neurons, double *connections, double *activations, int size) {
+//	//int maxId = gridDim.x * blockDim.x;
+//	//int idx = (threadIdx.x + blockIdx.x * blockDim.x) + (maxId * i);
+//	//if (idx < size) {
+//	for (int i = 0; i < size; i++)
+//		activations[i] = neurons[i]->forward(connections);
+//	//}
+//}
+
 __global__ void forwardPass(Neuron **neurons, double *connections, double *activations, int size) {
-	//int maxId = gridDim.x * blockDim.x;
-	//int idx = (threadIdx.x + blockIdx.x * blockDim.x) + (maxId * i);
-	//if (idx < size) {
-	for (int i = 0; i < size; i++)
-		activations[i] = neurons[i]->forward(connections);
-	//}
+    //int maxId = gridDim.x * blockDim.x;
+    int idx = blockIdx.x * blockDim.x + threadIdx.x;
+    if (idx < size) {
+        activations[idx] = neurons[idx]->forward(connections);
+    }
 }
 
 //__global__ void backwardPass(Neuron **neurons, double *weightedError, double *errorSum,
@@ -138,8 +146,6 @@ double TextClassifier::train(vector<double> &inputs, vector<double> &target) {
     cudaMalloc((void **) &lstm_activations, sizeof(double) * block->nCells);
     cudaMemcpy(connections, inputs.data(),
                sizeof(double) * inputs.size(), cudaMemcpyHostToDevice);
-    cout << connections << " " << &connections[0];
-    cout << inputs.size() << " " << block->nConnections << endl;
     // TODO
     //for (int i = 0; i < inputs.size(); i++) {
     //    cudaMemcpy(block->impulses[i].data(), &connections[i][0],
