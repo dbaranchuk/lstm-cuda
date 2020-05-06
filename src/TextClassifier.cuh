@@ -2,7 +2,7 @@
 #define TextClassifier_H_
 
 #include <vector>
-#include "MemoryBlock.cuh"
+#include "LSTMCell.cuh"
 #include "Neuron.cuh"
 #include <cuda.h>
 #include <math.h>

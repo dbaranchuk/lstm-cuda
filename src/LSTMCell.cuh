@@ -1,5 +1,5 @@
-#ifndef MEMORYBLOCK_H_
-#define MEMORYBLOCK_H_
+#ifndef LSTMCell_H_
+#define LSTMCell_H_
 
 #include "MemoryCell.cuh"
 #include <math.h>
@@ -11,7 +11,7 @@
 #include <random>
 using namespace std;
 
-class MemoryBlock {
+class LSTMCell {
 private:
 	static long long n;
 	__device__ double sigmoid(double input);
@@ -21,8 +21,8 @@ public:
 	int nCells;
 	MemoryCell **cells;
 	double *input_data_weight,
-		*forget_data_weight, *output_data_weight,
-		*bias, //**impulses,
+		*forget_data_weight, *output_data_weight, *bias,
+		//**impulses,
 		*input_hidden_weight,
 		*forget_hidden_weight,
 		*output_hidden_weight;
@@ -32,12 +32,13 @@ public:
 	__device__ double inputGate(double data);
 	__device__ double forgetGate(double data);
 	__device__ double outputGate(double data);
-	MemoryBlock(int cl, int cn);
-	virtual ~MemoryBlock();
+
+	LSTMCell(int output_size, int hidden_size);
+	virtual ~LSTMCell();
 	__device__ double *forward(double *input);
 //	__device__ double *backward(double *errorPrime, double learningRate);
-	static MemoryBlock *copyToGPU(MemoryBlock *memory);
-	static MemoryBlock *copyFromGPU(MemoryBlock *memory);
+	static LSTMCell *copyToGPU(LSTMCell *memory);
+	static LSTMCell *copyFromGPU(LSTMCell *memory);
 };
 
-#endif /* MEMORYBLOCK_H_ */
+#endif /* LSTMCell_H_ */

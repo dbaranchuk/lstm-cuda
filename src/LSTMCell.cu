@@ -1,10 +1,10 @@
-#include "MemoryBlock.cuh"
+#include "LSTMCell.cuh"
 
-long long int MemoryBlock::n = 0;
+long long int LSTMCell::n = 0;
 
-MemoryBlock::MemoryBlock(int cl, int hidden_size) {
+LSTMCell::LSTMCell(int output_size, int hidden_size) {
 	nConnections = hidden_size;
-	nCells = cl;
+	nCells = output_size;
 	input = 0; inputPrime = 0;
 	forget = 0; forgetPrime = 0;
 	output = 0; outputPrime = 0;
@@ -38,37 +38,37 @@ MemoryBlock::MemoryBlock(int cl, int hidden_size) {
 	}
 }
 
-MemoryBlock::~MemoryBlock() {
+LSTMCell::~LSTMCell() {
 }
 
 
-__device__ double MemoryBlock::sigmoid(double input) {
+__device__ double LSTMCell::sigmoid(double input) {
 	return 1 / (1 + exp(-input));
 }
 
-__device__ double MemoryBlock::sigmoidPrime(double input) {
+__device__ double LSTMCell::sigmoidPrime(double input) {
 	return sigmoid(input) * (1 - sigmoid(input));
 }
 
-__device__ double MemoryBlock::inputGate(double data) {
+__device__ double LSTMCell::inputGate(double data) {
 	input = sigmoid(data);
 	inputPrime = sigmoidPrime(data);
 	return input;
 }
 
-__device__ double MemoryBlock::forgetGate(double data) {
+__device__ double LSTMCell::forgetGate(double data) {
 	forget = sigmoid(data);
 	forgetPrime = sigmoidPrime(data);
 	return forget;
 }
 
-__device__ double MemoryBlock::outputGate(double data) {
+__device__ double LSTMCell::outputGate(double data) {
 	output = sigmoid(data);
 	outputPrime = sigmoidPrime(data);
 	return output;
 }
 
-__device__ double *MemoryBlock::forward(double *input) {
+__device__ double *LSTMCell::forward(double *input) {
 	double *cellSum = new double[nCells] {0};
 	double inputSum = bias[0];
 	double forgetSum = bias[1];
@@ -107,7 +107,7 @@ __device__ double *MemoryBlock::forward(double *input) {
 }
 
 // errorprime must be a vector with length of number of cells
-//__device__ double *MemoryBlock::backward(double *errorPrime, double learningRate) {
+//__device__ double *LSTMCell::backward(double *errorPrime, double learningRate) {
 //	double *eta = new double[nCells],
 //			*inputDataPartialSum = new double[nConnections] {0},
 //			*forgetDataPartialSum = new double[nConnections] {0};
@@ -164,11 +164,11 @@ __device__ double *MemoryBlock::forward(double *input) {
 //	return temp;
 //}
 
-MemoryBlock *MemoryBlock::copyToGPU(MemoryBlock *memory) {
-	MemoryBlock *memoryBlock;
-	cudaMalloc((void **)&memoryBlock, (sizeof(MemoryBlock)));
+LSTMCell *LSTMCell::copyToGPU(LSTMCell *memory) {
+	LSTMCell *memoryBlock;
+	cudaMalloc((void **)&memoryBlock, (sizeof(LSTMCell)));
 	cudaDeviceSynchronize();
-	cudaMemcpy(memoryBlock, memory, sizeof(MemoryBlock), cudaMemcpyHostToDevice);
+	cudaMemcpy(memoryBlock, memory, sizeof(LSTMCell), cudaMemcpyHostToDevice);
 	cudaDeviceSynchronize();
 
 	MemoryCell **memoryCells;
@@ -215,12 +215,12 @@ MemoryBlock *MemoryBlock::copyToGPU(MemoryBlock *memory) {
 	return memoryBlock;
 }
 
-MemoryBlock *MemoryBlock::copyFromGPU(MemoryBlock *memory) {
+LSTMCell *LSTMCell::copyFromGPU(LSTMCell *memory) {
 
-	MemoryBlock *memoryBlock;
-	memoryBlock = (MemoryBlock *)malloc((sizeof(MemoryBlock)));
+	LSTMCell *memoryBlock;
+	memoryBlock = (LSTMCell *)malloc((sizeof(LSTMCell)));
 	cudaDeviceSynchronize();
-	cudaMemcpy(memoryBlock, memory, sizeof(MemoryBlock), cudaMemcpyDeviceToHost);
+	cudaMemcpy(memoryBlock, memory, sizeof(LSTMCell), cudaMemcpyDeviceToHost);
 	cudaDeviceSynchronize();
 
 	MemoryCell **memoryCells;
