@@ -25,11 +25,6 @@ struct tm *getDate() {
 }
 
 int main(int argc, char *argv[]) {
-	cout << "Program initializing" << endl;
-	if (argc < 3) {
-		cout << argv[0] << " <learning rate> <cells>" << endl;
-		return -1;
-	}
 	std::srand(unsigned(std::time(0)));
 
     long long networkStart, networkEnd;
@@ -39,10 +34,10 @@ int main(int argc, char *argv[]) {
 	int num_batches = 10;
 	int emb_size = 128;
 	int num_classes = 10;
-	int cells = atoi(argv[2]);
+	int cells = 1000;//atoi(argv[2]);
 	int seq_len = 20;
 
-	double learningRate = atof(argv[1]);
+	double learningRate = 0.01;//atof(argv[1]);
 
 	TextClassifier model = TextClassifier(emb_size, cells, learningRate, num_classes);
 	Data data = Data(emb_size, num_classes);
