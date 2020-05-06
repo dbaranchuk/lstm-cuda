@@ -26,7 +26,6 @@ public:
 	Neuron(int nConnections);
 	~Neuron();
 	__device__ double forward(double *input);
-	__device__ double *backward(double errorPrime, double learningRate);
 	static Neuron *copyToGPU(Neuron *data);
 	static Neuron *copyFromGPU(Neuron *data);
 };

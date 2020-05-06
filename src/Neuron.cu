@@ -36,15 +36,6 @@ __device__ double Neuron::forward(double *input) {
 	return activation;
 }
 
-__device__ double *Neuron::backward(double errorPrime, double learningRate) {
-	// update all weights
-	for (int i = 0; i < connections; i++) {
-		weightedError[i] = (errorPrime * weight[i] * activationPrime);
-		weight[i] -= learningRate * errorPrime * impulse[i];
-	}
-	return weightedError;
-}
-
 Neuron *Neuron::copyToGPU(Neuron *data) {
 	Neuron *neuron;
 	cudaMalloc((void **)&neuron, (sizeof(Neuron)));
