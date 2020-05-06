@@ -87,7 +87,7 @@ TextClassifier::TextClassifier(int input_size, int hidden_size, double lr, int n
 	block = new LSTMCell(hidden_size, input_size);
 
 	for (int i = 0; i < num_classes; i++)
-        logits_layer.push_back(Neuron(c));
+        logits_layer.push_back(Neuron(hidden_size));
 }
 
 TextClassifier::~TextClassifier() {}
