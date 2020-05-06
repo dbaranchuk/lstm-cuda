@@ -19,7 +19,7 @@ __global__ void logits_forward_pass(Neuron **neurons, double *connections, doubl
 
 __global__ void lstm_forward_pass(MemoryBlock *block, double *connections, double *activations, int size)
 {
-    double cellSum[10]; //TODO
+    double cellSum[100]; //TODO
     double inputSum = block->bias[0];
     double forgetSum = block->bias[1];
     double outputSum = block->bias[2];
@@ -187,7 +187,7 @@ double TextClassifier::train(vector<double> &inputs, vector<double> &target) {
     //               (sizeof(double) * block->nConnections), cudaMemcpyDeviceToHost);
     //}
     MemoryBlock *device_block = MemoryBlock::copyToGPU(block);
-    for (int i = 0; i < 20; i++) {
+    for (int i = 0; i < 100; i++) {
         lstm_forward_pass<<< maxBlocks, maxThreads >>>(device_block, connections + block->nConnections * i,
                                                        lstm_activations, block->nConnections);
     }

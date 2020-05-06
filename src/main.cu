@@ -31,11 +31,11 @@ int main(int argc, char *argv[]) {
     networkStart = getMSec();
 
 	int num_epochs = 10;
-	int num_batches = 10;
+	int num_batches = 100;
 	int emb_size = 128;
 	int num_classes = 10;
-	int cells = 1000;//atoi(argv[2]);
-	int seq_len = 20;
+	int cells = 100;//atoi(argv[2]);
+	int seq_len = 100;
 
 	double learningRate = 0.01;//atof(argv[1]);
 
