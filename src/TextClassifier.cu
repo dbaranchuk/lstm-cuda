@@ -9,13 +9,49 @@
 //	//}
 //}
 
-__global__ void forwardPass(Neuron **neurons, double *connections, double *activations, int size) {
+__global__ void logits_forward_pass(Neuron **neurons, double *connections, double *activations, int size) {
     //int maxId = gridDim.x * blockDim.x;
     int idx = blockIdx.x * blockDim.x + threadIdx.x;
     if (idx < size) {
         activations[idx] = neurons[idx]->forward(connections);
     }
 }
+
+__global__ void lstm_forward_pass(MemoryBlock *block, double *connections, double *activations, int size) {
+
+    double cellSum[block->nCells];
+    double inputSum = block->bias[0];
+    double forgetSum = block->bias[1];
+    double outputSum = block->bias[2];
+
+    int idx = blockIdx.x * blockDim.x + threadIdx.x;
+
+    if (idx < block->nConnections) {
+        for (int j = 0; j < block->nCells; j++) {
+            cellSum[j] += connections[idx] * block->cells[j]->cell_data_weight[idx];
+        }
+        inputSum += connections[idx] * block->input_data_weight[idx];
+        forgetSum += connections[idx] * block->forget_data_weight[idx];
+        outputSum += connections[idx] * block->output_data_weight[idx];
+    }
+
+    if (idx < block->nCells) {
+        inputSum += block->input_hidden_weight[idx] * block->cells[idx]->feedback;
+        forgetSum += block->forget_hidden_weight[idx] * block->cells[idx]->feedback;
+        outputSum += block->output_hidden_weight[idx] * block->cells[idx]->feedback;
+
+        block->cells[idx]->previousState = block->cells[idx]->state;
+        block->cells[idx]->state *= block->forgetGate(forgetSum);
+        block->cells[idx]->state += block->cells[idx]->activateIn(cellSum[idx]) * block->inputGate(inputSum);
+
+        // compute output of memory cell
+        block->cells[idx]->previousFeedback = block->cells[idx]->feedback;
+        block->cells[idx]->feedback = block->cells[idx]->activateOut(block->cells[idx]->state) * block->outputGate(outputSum);
+        activations[idx] = block->cells[idx]->feedback;
+
+    }
+}
+
 
 //__global__ void backwardPass(Neuron **neurons, double *weightedError, double *errorSum,
 //							 double learningRate, int connections, int size) {
@@ -40,14 +76,14 @@ __global__ void forwardPass(Neuron **neurons, double *connections, double *activ
 //	}
 //}
 
-__global__ void forwardPassLSTM(MemoryBlock *block, double *connections, double *activations, int cycles) {
-    double *local_activations;
-    for (int i = 0; i < cycles; i++) {
-		local_activations = block->forward(connections + block->nConnections * i);
-	}
-    for (int i = 0; i < block->nCells; i++)
-        activations[i] = local_activations[i];
-}
+//__global__ void forwardPassLSTM(MemoryBlock *block, double *connections, double *activations, int cycles) {
+//    double *local_activations;
+//    for (int i = 0; i < cycles; i++) {
+//		local_activations = block->forward(connections + block->nConnections * i);
+//	}
+//    for (int i = 0; i < block->nCells; i++)
+//        activations[i] = local_activations[i];
+//}
 
 //__global__ void backwardPassLSTM(MemoryBlock **blocks, double **weightedError, double *errorSum, double learningRate, int connections, int size, int cycles) {
 //	int maxId = gridDim.x * blockDim.x;
@@ -152,7 +188,13 @@ double TextClassifier::train(vector<double> &inputs, vector<double> &target) {
     //               (sizeof(double) * block->nConnections), cudaMemcpyDeviceToHost);
     //}
     MemoryBlock *device_block = MemoryBlock::copyToGPU(block);
-    forwardPassLSTM << < maxBlocks, maxThreads >> > (device_block, connections, lstm_activations, inputs.size());
+    double *local_activations;
+    for (int i = 0; i < 20; i++) {
+        lstm_forward_pass<<< maxBlocks, maxThreads >>>(device_block, connections + device_block->nConnections * i,
+                                                       lstm_activations, device_block->nConnections);
+    }
+
+//    forwardPassLSTM << < maxBlocks, maxThreads >> > (device_block, connections, lstm_activations, inputs.size());
     cudaDeviceSynchronize();
     cudaFree(connections);
 

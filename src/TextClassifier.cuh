@@ -9,9 +9,9 @@
 
 using namespace std;
 
-__global__ void forwardPass(Neuron **neurons, double *connections, double *activations, int size);
+__global__ void logits_forward_pass(Neuron **neurons, double *connections, double *activations, int size);
 //__global__ void backwardPass(Neuron **neurons, double *weightedError, double *errorSum, double learningRate, int connections);
-__global__ void forwardPassLSTM(MemoryBlock *block, double *connections, double **activations, int cycles);
+__global__ void lstm_forward_pass(MemoryBlock *block, double *connections, double **activations, int size);
 //__global__ void backwardPassLSTM(MemoryBlock *block, double **weightedError, double *errorSum, double learningRate, int connections, int cycles);
 
 
