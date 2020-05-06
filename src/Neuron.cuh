@@ -14,8 +14,6 @@ using namespace std;
 class Neuron {
 private:
 	static long long n;
-	__device__ double sigmoid(double input);
-	__device__ double sigmoidPrime(double input);
 	__device__ double activate(double input);
 	__device__ double activatePrime(double input);
 public:

@@ -17,14 +17,6 @@ Neuron::Neuron(int size) {
 
 Neuron::~Neuron() {}
 
-__device__ double Neuron::sigmoid(double input) {
-	return 1 / (1 + exp(-input));
-}
-
-__device__ double Neuron::sigmoidPrime(double input) {
-	return sigmoid(input) * (1 - sigmoid(input));
-}
-
 __device__ double Neuron::activate(double input) {
 	return tanh(input);
 }
