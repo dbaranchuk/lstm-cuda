@@ -18,7 +18,7 @@
 #include <random>
 using namespace std;
 
-class MemoryBlock : public BaseNode {
+class MemoryBlock {
 private:
 	static long long n;
 	__device__ double sigmoid(double input);
