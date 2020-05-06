@@ -194,7 +194,7 @@ double TextClassifier::train(vector<double> &inputs, vector<double> &target) {
                    sizeof(double) * block->nConnections, cudaMemcpyHostToDevice);
         cout << block->nCells << " " << block->nConnections << endl;
         lstm_forward_pass<<< maxBlocks, maxThreads >>>(device_block, local_connections,// + block->nConnections * i,
-                                                       lstm_activations, device_block->nConnections);
+                                                       lstm_activations, block->nConnections);
         cout << local_connections << endl;
         cudaFree(local_connections);
     }
